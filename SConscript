@@ -12,6 +12,6 @@ src += Glob('MQTTClient-RT/*.c')
 path = [cwd + '/MQTTPacket/src']
 path += [cwd + '/MQTTClient-RT']
 
-group = DefineGroup('paho-mqtt', src, depend = ['PKG_USING_PAHO_MQTT'], CPPPATH = path)
+group = DefineGroup('paho-mqtt', src, depend = ['PKG_USING_PAHOMQTT'], CPPPATH = path)
 
 Return('group')
