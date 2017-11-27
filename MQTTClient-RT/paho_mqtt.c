@@ -21,7 +21,7 @@
 #define free		rt_free
 
 #if !defined(LWIP_NETIF_LOOPBACK) || (LWIP_NETIF_LOOPBACK == 0)
-#error "must enable (LWIP_NETIF_LOOPBACK = 1) for publish!"
+//#error "must enable (LWIP_NETIF_LOOPBACK = 1) for publish!"
 #endif /* LWIP_NETIF_LOOPBACK */
 
 static uint16_t pub_port = 7000;
