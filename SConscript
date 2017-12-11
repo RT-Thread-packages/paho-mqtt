@@ -9,6 +9,9 @@ cwd = GetCurrentDir()
 src = Glob('MQTTPacket/src/*.c')
 src += Glob('MQTTClient-RT/*.c')
 
+if GetDepend(['PKG_USING_PAHOMQTT_EXAMPLE']):
+    src += Glob('example/*.c')
+
 path = [cwd + '/MQTTPacket/src']
 path += [cwd + '/MQTTClient-RT']
 
