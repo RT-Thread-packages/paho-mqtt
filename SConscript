@@ -6,7 +6,11 @@ cwd = GetCurrentDir()
 
 # The set of source files associated with this SConscript file.
 src = Glob('MQTTPacket/src/*.c')
-src += Glob('MQTTClient-RT/*.c')
+
+if GetDepend('RT_USING_POSIX') and GetDepend('RT_USING_DFS_NET'):
+    src += ['MQTTClient-RT/paho_mqtt_pipe.c']
+else:
+    src += ['MQTTClient-RT/paho_mqtt_udp.c']
 
 if GetDepend(['PKG_USING_PAHOMQTT_EXAMPLE']):
     src += Glob('example/*.c')
