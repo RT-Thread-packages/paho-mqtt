@@ -61,9 +61,13 @@ struct MQTTClient
 
     void (*defaultMessageHandler) (MQTTClient*, MessageData*);
 
-    /* publish sock */
+    /* publish interface */
+#if defined(RT_USING_POSIX) && defined(RT_USING_DFS_NET)
+    int pub_pipe[2];
+#else
     int pub_sock;
     int pub_port;
+#endif /* RT_USING_POSIX && RT_USING_DFS_NET */
 };
 
 extern int paho_mqtt_start(MQTTClient *client);
