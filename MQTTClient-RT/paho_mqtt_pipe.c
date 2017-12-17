@@ -520,6 +520,9 @@ _mqtt_start:
     {
         const char *topic = c->messageHandlers[i].topicFilter;
 
+        if(topic == RT_NULL)
+            continue;
+
         rc = MQTTSubscribe(c, topic, QOS2);
         debug_printf("Subscribe #%d %s %s!\n", i, topic, (rc < 0) ? ("fail") : ("OK"));
 

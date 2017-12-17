@@ -5,8 +5,10 @@
 
 #include <MQTTPacket.h>
 
-#ifndef MAX_MESSAGE_HANDLERS
+#ifndef PKG_PAHOMQTT_SUBSCRIBE_HANDLERS 
 #define MAX_MESSAGE_HANDLERS    1 /* redefinable - how many subscriptions do you want? */
+#else
+#define MAX_MESSAGE_HANDLERS    PKG_PAHOMQTT_SUBSCRIBE_HANDLERS
 #endif
 
 #define MAX_PACKET_ID           65535 /* according to the MQTT specification - do not change! */
