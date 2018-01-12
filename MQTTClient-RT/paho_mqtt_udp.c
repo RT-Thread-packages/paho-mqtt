@@ -7,7 +7,7 @@
 #include "paho_mqtt.h"
 
 #include <lwip/netdb.h>
-#include <lwip/sockets.h>
+#include <sys/socket.h>
 #include <arch/sys_arch.h>
 #include <lwip/sys.h>
 #include <lwip/netifapi.h>
@@ -134,7 +134,7 @@ static int net_read(MQTTClient *c, unsigned char *buf,  int len, int timeout)
             FD_ZERO(&readset);
             FD_SET(c->sock, &readset);
 
-            lwip_select(c->sock + 1, &readset, RT_NULL, RT_NULL, &interval);
+            select(c->sock + 1, &readset, RT_NULL, RT_NULL, &interval);
         }
         else
         {
@@ -233,7 +233,7 @@ static int MQTTConnect(MQTTClient *c)
         FD_ZERO(&readset);
         FD_SET(c->sock, &readset);
 
-        res = lwip_select(c->sock + 1, &readset, RT_NULL, RT_NULL, &timeout);
+        res = select(c->sock + 1, &readset, RT_NULL, RT_NULL, &timeout);
 
         if (res <= 0)
         {
@@ -314,7 +314,7 @@ static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
         FD_ZERO(&readset);
         FD_SET(c->sock, &readset);
 
-        res = lwip_select(c->sock + 1, &readset, RT_NULL, RT_NULL, &timeout);
+        res = select(c->sock + 1, &readset, RT_NULL, RT_NULL, &timeout);
 
         if (res <= 0)
         {
@@ -586,8 +586,8 @@ _mqtt_start:
         FD_SET(c->sock, &readset);
         FD_SET(c->pub_sock, &readset);
 
-        /* int lwip_select(maxfdp1, readset, writeset, exceptset, timeout); */
-        res = lwip_select(((c->pub_sock > c->sock) ? c->pub_sock : c->sock) + 1,
+        /* int select(maxfdp1, readset, writeset, exceptset, timeout); */
+        res = select(((c->pub_sock > c->sock) ? c->pub_sock : c->sock) + 1,
                           &readset, RT_NULL, RT_NULL, &timeout);
         if (res == 0)
         {
@@ -606,7 +606,7 @@ _mqtt_start:
             FD_ZERO(&readset);
             FD_SET(c->sock, &readset);
 
-            res = lwip_select(c->sock + 1, &readset, RT_NULL, RT_NULL, &timeout);
+            res = select(c->sock + 1, &readset, RT_NULL, RT_NULL, &timeout);
             if (res <= 0)
             {
                 debug_printf("[%d] wait Ping Response res: %d\n", rt_tick_get(), res);
