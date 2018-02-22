@@ -170,7 +170,7 @@ exit:
 
 static int MQTTPacket_readPacket(MQTTClient *c)
 {
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
     MQTTHeader header = {0};
     int len = 0;
     int rem_len = 0;
@@ -269,7 +269,7 @@ _exit:
 
 static int MQTTDisconnect(MQTTClient *c)
 {
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
     int len = 0;
 
     len = MQTTSerialize_disconnect(c->buf, c->buf_size);
@@ -283,7 +283,7 @@ static int MQTTDisconnect(MQTTClient *c)
 
 static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
 {
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
     int len = 0;
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)topicFilter;
@@ -294,7 +294,7 @@ static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
     len = MQTTSerialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, (int *)&qos);
     if (len <= 0)
         goto _exit;
-    if ((rc = sendPacket(c, len)) != SUCCESS) // send the subscribe packet
+    if ((rc = sendPacket(c, len)) != PAHO_SUCCESS) // send the subscribe packet
         goto _exit;             // there was a problem
 
     {
@@ -339,7 +339,7 @@ static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
         }
     }
     else
-        rc = FAILURE;
+        rc = PAHO_FAILURE;
 
 _exit:
     return rc;
@@ -385,7 +385,7 @@ static char isTopicMatched(char *topicFilter, MQTTString *topicName)
 static int deliverMessage(MQTTClient *c, MQTTString *topicName, MQTTMessage *message)
 {
     int i;
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
 
     // we have to find the right message handler - indexed by topic
     for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i)
@@ -398,17 +398,17 @@ static int deliverMessage(MQTTClient *c, MQTTString *topicName, MQTTMessage *mes
                 MessageData md;
                 NewMessageData(&md, topicName, message);
                 c->messageHandlers[i].callback(c, &md);
-                rc = SUCCESS;
+                rc = PAHO_SUCCESS;
             }
         }
     }
 
-    if (rc == FAILURE && c->defaultMessageHandler != NULL)
+    if (rc == PAHO_FAILURE && c->defaultMessageHandler != NULL)
     {
         MessageData md;
         NewMessageData(&md, topicName, message);
         c->defaultMessageHandler(c, &md);
-        rc = SUCCESS;
+        rc = PAHO_SUCCESS;
     }
 
     return rc;
@@ -420,12 +420,12 @@ static int MQTT_cycle(MQTTClient *c)
     int packet_type = MQTTPacket_readPacket(c);
 
     int len = 0,
-        rc = SUCCESS;
+        rc = PAHO_SUCCESS;
 
 
     if (packet_type == -1)
     {
-        rc = FAILURE;
+        rc = PAHO_FAILURE;
         goto exit;
     }
 
@@ -452,10 +452,10 @@ static int MQTT_cycle(MQTTClient *c)
             else if (msg.qos == QOS2)
                 len = MQTTSerialize_ack(c->buf, c->buf_size, PUBREC, 0, msg.id);
             if (len <= 0)
-                rc = FAILURE;
+                rc = PAHO_FAILURE;
             else
                 rc = sendPacket(c, len);
-            if (rc == FAILURE)
+            if (rc == PAHO_FAILURE)
                 goto exit; // there was a problem
         }
         break;
@@ -465,12 +465,12 @@ static int MQTT_cycle(MQTTClient *c)
         unsigned short mypacketid;
         unsigned char dup, type;
         if (MQTTDeserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1)
-            rc = FAILURE;
+            rc = PAHO_FAILURE;
         else if ((len = MQTTSerialize_ack(c->buf, c->buf_size, PUBREL, 0, mypacketid)) <= 0)
-            rc = FAILURE;
-        else if ((rc = sendPacket(c, len)) != SUCCESS) // send the PUBREL packet
-            rc = FAILURE; // there was a problem
-        if (rc == FAILURE)
+            rc = PAHO_FAILURE;
+        else if ((rc = sendPacket(c, len)) != PAHO_SUCCESS) // send the PUBREL packet
+            rc = PAHO_FAILURE; // there was a problem
+        if (rc == PAHO_FAILURE)
             goto exit; // there was a problem
         break;
     }
@@ -642,7 +642,7 @@ _mqtt_start:
                 goto _mqtt_disconnect;
             }
 
-            if ((rc = sendPacket(c, len)) != SUCCESS) // send the subscribe packet
+            if ((rc = sendPacket(c, len)) != PAHO_SUCCESS) // send the subscribe packet
             {
                 debug_printf("MQTTSerialize_publish sendPacket rc: %d\n", rc);
                 goto _mqtt_disconnect;
@@ -721,7 +721,7 @@ int MQTT_CMD(MQTTClient *c, const char *cmd)
 {
     char *data = 0;
     int cmd_len, len;
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
 
     if (!c->isconnected)
         goto _exit;
@@ -756,7 +756,7 @@ _exit:
 */
 int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 {
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
     int len, msg_len;
     char *data = 0;
 
