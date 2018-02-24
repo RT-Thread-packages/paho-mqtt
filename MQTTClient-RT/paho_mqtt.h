@@ -16,7 +16,7 @@
 enum QoS { QOS0, QOS1, QOS2 };
 
 /* all failure return codes must be negative */
-enum returnCode { BUFFER_OVERFLOW = -2, FAILURE = -1, SUCCESS = 0 };
+enum returnCode { PAHO_BUFFER_OVERFLOW = -2, PAHO_FAILURE = -1, PAHO_SUCCESS = 0 };
 
 typedef struct MQTTMessage
 {
@@ -51,9 +51,9 @@ struct MQTTClient
     int isconnected;
     uint32_t tick_ping;
 
-    void (*connect_callback) (MQTTClient*); /* 连接过程回调 */
-    void (*online_callback) (MQTTClient*);  /* 成功上线回调 */
-    void (*offline_callback) (MQTTClient*); /* 离线状态回调 */
+    void (*connect_callback) (MQTTClient*);
+    void (*online_callback) (MQTTClient*);
+    void (*offline_callback) (MQTTClient*);
 
     struct MessageHandlers
     {
