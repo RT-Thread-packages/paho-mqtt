@@ -48,7 +48,6 @@ static int net_connect(MQTTClient *c)
     if ((rc = connect(c->sock, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr))) == -1)
     {
         debug_printf("connect %s:%d error!\n", c->host, c->port);
-        closesocket(c->sock);
         return -2;
     }
 
