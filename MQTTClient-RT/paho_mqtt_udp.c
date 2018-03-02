@@ -54,7 +54,6 @@ static int net_connect(MQTTClient *c)
     if ((rc = connect(c->sock, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr))) == -1)
     {
         debug_printf("connect %s:%d error!\n", c->host, c->port);
-        closesocket(c->sock);
         return -2;
     }
 
@@ -275,7 +274,8 @@ _exit:
 
 static int MQTTDisconnect(MQTTClient *c)
 {
-    int rc = PAHO_FAILUPAHO_FAILURE  int len = 0;
+    int rc = PAHO_FAILURE;
+    int len = 0;
 
     len = MQTTSerialize_disconnect(c->buf, c->buf_size);
     if (len > 0)
@@ -800,7 +800,7 @@ _exit:
 */
 int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 {
-    int rc = FAILURE;
+    int rc = PAHO_FAILURE;
     int len, msg_len;
     char *data = 0;
 
