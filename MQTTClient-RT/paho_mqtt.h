@@ -77,7 +77,7 @@ struct MQTTClient
  *
  * @param client the pointer of MQTT context structure
  *
- * @return the error code, 0 on subscribe successfully.
+ * @return the error code, 0 on start successfully.
  */
 extern int paho_mqtt_start(MQTTClient *client);
 

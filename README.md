@@ -30,7 +30,7 @@ RT-Thread MQTT 客户端功能特点：
 ![](./doc/image/paho-mqtt-menuconfig.png)
 
 ### 3.2 运行示例
-在 RT-Thread 串口 MSH 中运行 MQTT 示例，需要开启 MSH 的支持。
+`samples/mqtt_sample.c` 例程提供了一个基础的 MQTT 发布订阅演示，在 RT-Thread MSH 中运行 MQTT 示例，需要开启 MSH 的支持。
 
 - 开启 MSH  
 使用 menuconfig 开启 MSH 支持：
@@ -42,6 +42,8 @@ RT-Thread MQTT 客户端功能特点：
           [ ]     Only using module shell
 ```
 - MSH log
+
+启动 MQTT 客户端：
 ```
 msh />
 msh />mq_start
@@ -51,6 +53,9 @@ ipv4 address port: 1883
 msh />[MQTT] Subscribe #0 /mqtt/test OK!
 inter mqtt_online_callback! 
 msh />
+```
+发布消息：
+```
 msh />
 msh />mq_pub hello-rtthread
 msh />mqtt sub callback: /mqtt/test hello-rtthread
@@ -66,7 +71,7 @@ paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相
 |callback 名称                           |描述|
 |:-----                                  |:----|
 |connect_callback                        |MQTT 连接成功的回调|
-|online_callback                         |MQTT 客户端成功在线的回调|
+|online_callback                         |MQTT 客户端成功上线的回调|
 |offline_callback                        |MQTT 客户端掉线的回调|
 |defaultMessageHandler                   |默认的订阅消息接收回调|
 |messageHandlers[x].callback             |订阅列表中对应的订阅消息接收回调|
@@ -91,14 +96,28 @@ tcp://[fe80::20c:29ff:fe9a:a07e]:1883
 ssl://[fe80::20c:29ff:fe9a:a07e]:1884
 ```
 
-### 4.3 MQTTPublish 接口
-- `MQTTPublish` 功能： 向指定的 topic 主题发布 MQTT 消息。
+### 4.3 paho_mqtt_start 接口
+- 功能： 启动 MQTT 客户端。
 
-- `MQTTPublish` 函数原型：
+- 函数原型：
+```C
+int paho_mqtt_start(MQTTClient *client)
+```
+- 函数参数：
+
+|参数                               |描述|
+|:-----                             |:----|
+|client                             |MQTT 客户端实例对象|
+|return                             |0 - 成功; others - 失败|
+
+### 4.4 MQTTPublish 接口
+- 功能： 向指定的 topic 主题发布 MQTT 消息。
+
+- 函数原型：
 ```C
 int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 ```
-- `MQTTPublish` 函数参数：
+- 函数参数：
 
 |参数                               |描述|
 |:-----                             |:----|
@@ -106,7 +125,6 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 |topicName                          |MQTT 消息发布主题|
 |message                            |MQTT 消息内容|
 |return                             |0 - 成功; others - 失败|
-
 
 ## 5、注意事项
 
