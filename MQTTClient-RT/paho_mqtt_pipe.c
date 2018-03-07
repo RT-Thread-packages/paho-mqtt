@@ -33,7 +33,7 @@
  * tcp://[fe80::20c:29ff:fe9a:a07e]:1883
  * tls://[fe80::20c:29ff:fe9a:a07e]:61614
  */
-int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
+static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
 {
     int rc = 0;
     int uri_len = 0, host_addr_len = 0, port_len = 0;
@@ -63,20 +63,16 @@ int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
     /* ipv6 address */
     if (host_addr[0] == '[')
     {
-        //rt_kprintf("is ipv6 address!\n");
-
         host_addr += 1;
         ptr = strstr(host_addr, "]");
         if (!ptr)
         {
-            //rt_kprintf("ipv6 address miss end!\n");
             rc = -1;
             goto _exit;
         }
         host_addr_len = ptr - host_addr;
         if ((host_addr_len < 1) || (host_addr_len > uri_len))
-        {
-            //rt_kprintf("%s host_addr_len: %d error!\n", __FUNCTION__, host_addr_len);
+        {            
             rc = -1;
             goto _exit;
         }
@@ -90,14 +86,10 @@ int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
 
         strncpy(port_str, host_addr + host_addr_len + 2, port_len);
         port_str[port_len] = '\0';
-        rt_kprintf("ipv6 address port: %s\n", port_str);
-        
-        // *request = (char *)ptr;
+        debug_printf("ipv6 address port: %s\n", port_str);
     }
     else /* ipv4 or domain. */
     {
-        char *port_ptr;
-
         ptr = strstr(host_addr, ":");
         if (!ptr)
         {
@@ -107,7 +99,6 @@ int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         host_addr_len = ptr - host_addr;
         if ((host_addr_len < 1) || (host_addr_len > uri_len))
         {
-            //rt_kprintf("%s host_addr_len: %d error!\n", __FUNCTION__, host_addr_len);
             rc = -1;
             goto _exit;
         }             
@@ -121,7 +112,7 @@ int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
 
         strncpy(port_str, host_addr + host_addr_len + 1, port_len);
         port_str[port_len] = '\0';
-        rt_kprintf("ipv4 address port: %s\n", port_str);
+        debug_printf("ipv4 address port: %s\n", port_str);
     }
 
     /* get host addr ok. */
@@ -140,14 +131,14 @@ int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
 
         memcpy(host_addr_new, host_addr, host_addr_len);
         host_addr_new[host_addr_len] = '\0';
-        rt_kprintf("[MQTT] HOST =  '%s'\n", host_addr_new);
+        debug_printf("HOST =  '%s'\n", host_addr_new);
 
         memset(&hint, 0, sizeof(hint));
 
         ret = getaddrinfo(host_addr_new, port_str, &hint, res);
         if (ret != 0)
         {
-            rt_kprintf("getaddrinfo err: %d '%s'\n", ret, host_addr_new);
+            debug_printf("getaddrinfo err: %d '%s'\n", ret, host_addr_new);
             rc = -1;
             goto _exit;
         }
@@ -162,7 +153,7 @@ _exit:
     return rc;    
 }
 
-static int net_connect(MQTTClient *c) // port
+static int net_connect(MQTTClient *c)
 {
     int rc = -1;
     struct addrinfo *addr_res = RT_NULL;
@@ -170,7 +161,6 @@ static int net_connect(MQTTClient *c) // port
     c->sock = -1;
     c->next_packetid = 0;
 
-    // mqtt_resolve_uri 
     rc = mqtt_resolve_uri(c, &addr_res);
     if (rc < 0 || addr_res == RT_NULL)
     {
@@ -180,13 +170,13 @@ static int net_connect(MQTTClient *c) // port
 
     if ((c->sock = socket(addr_res->ai_family, SOCK_STREAM, 0)) == -1)
     {
-        debug_printf("[MQTT] create socket error!\n");
+        debug_printf("create socket error!\n");
         goto _exit;
     }
 
     if ((rc = connect(c->sock, addr_res->ai_addr, addr_res->ai_addrlen)) == -1)
     {
-        debug_printf("[MQTT] connect err!\n");
+        debug_printf("connect err!\n");
         rc = -2;
         goto _exit;
     }

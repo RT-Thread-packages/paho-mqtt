@@ -32,6 +32,8 @@ RT-Thread MQTT 客户端功能特点：
 ### 3.2 运行示例
 `samples/mqtt_sample.c` 例程提供了一个基础的 MQTT 发布订阅演示，在 RT-Thread MSH 中运行 MQTT 示例，需要开启 MSH 的支持。
 
+测试服务器使用 Eclipse 的测试服务器，地址 `iot.eclipse.org` ，端口 `1883`.
+
 - 开启 MSH  
 使用 menuconfig 开启 MSH 支持：
 ```
@@ -108,7 +110,7 @@ int paho_mqtt_start(MQTTClient *client)
 |参数                               |描述|
 |:-----                             |:----|
 |client                             |MQTT 客户端实例对象|
-|return                             |0 - 成功; others - 失败|
+|return                             |0 : 成功; 其他 : 失败|
 
 ### 4.4 MQTTPublish 接口
 - 功能： 向指定的 topic 主题发布 MQTT 消息。
@@ -124,7 +126,7 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 |c                                  |MQTT 客户端实例对象|
 |topicName                          |MQTT 消息发布主题|
 |message                            |MQTT 消息内容|
-|return                             |0 - 成功; others - 失败|
+|return                             |0 : 成功; 其他 : 失败|
 
 ## 5、注意事项
 
