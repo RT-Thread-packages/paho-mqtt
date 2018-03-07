@@ -13,7 +13,7 @@ else:
     src += ['MQTTClient-RT/paho_mqtt_udp.c']
 
 if GetDepend(['PKG_USING_PAHOMQTT_EXAMPLE']):
-    src += Glob('example/*.c')
+    src += Glob('samples/*.c')
 
 path = [cwd + '/MQTTPacket/src']
 path += [cwd + '/MQTTClient-RT']
