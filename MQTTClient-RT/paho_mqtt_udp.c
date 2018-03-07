@@ -24,40 +24,184 @@
 
 static uint16_t pub_port = 7000;
 
+/*
+ * resolve server address
+ * @param server the server sockaddress
+ * @param url the input URL address.
+ * @param host_addr the buffer pointer to save server host address
+ * @param request the pointer to point the request url, for example, /index.html
+ *
+ * @return 0 on resolve server address OK, others failed
+ *
+ * URL example:
+ * tcp://192.168.10.151:1883
+ * tls://192.168.10.151:61614
+ * tcp://[fe80::20c:29ff:fe9a:a07e]:1883
+ * tls://[fe80::20c:29ff:fe9a:a07e]:61614
+ */
+int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
+{
+    int rc = 0;
+    int uri_len = 0, host_addr_len = 0, port_len = 0;
+    char *ptr;
+    char port_str[6] = {0};      /* default port of mqtt(http) */
+
+    const char *host_addr = 0;
+    char *host_addr_new = RT_NULL;
+    const char *uri = c->uri;
+    uri_len = strlen(uri);
+
+    /* strip protocol(tcp or ssl) */
+    if (strncmp(uri, "tcp://", 6) == 0)
+    {
+        host_addr = uri + 6;
+    }
+    else if(strncmp(uri, "ssl://", 6) == 0)
+    {
+        host_addr = uri + 6;
+    }
+    else
+    {
+        rc = -1;
+        goto _exit;  
+    }
+
+    /* ipv6 address */
+    if (host_addr[0] == '[')
+    {
+        //rt_kprintf("is ipv6 address!\n");
+
+        host_addr += 1;
+        ptr = strstr(host_addr, "]");
+        if (!ptr)
+        {
+            //rt_kprintf("ipv6 address miss end!\n");
+            rc = -1;
+            goto _exit;
+        }
+        host_addr_len = ptr - host_addr;
+        if ((host_addr_len < 1) || (host_addr_len > uri_len))
+        {
+            //rt_kprintf("%s host_addr_len: %d error!\n", __FUNCTION__, host_addr_len);
+            rc = -1;
+            goto _exit;
+        }
+
+        port_len = uri_len - 6 - host_addr_len - 3;
+        if (port_len >= 6 || port_len < 1)
+        {
+            rc = -1;
+            goto _exit;            
+        }
+
+        strncpy(port_str, host_addr + host_addr_len + 2, port_len);
+        port_str[port_len] = '\0';
+        rt_kprintf("ipv6 address port: %s\n", port_str);
+        
+        // *request = (char *)ptr;
+    }
+    else /* ipv4 or domain. */
+    {
+        char *port_ptr;
+
+        ptr = strstr(host_addr, ":");
+        if (!ptr)
+        {
+            rc = -1;
+            goto _exit;
+        }
+        host_addr_len = ptr - host_addr;
+        if ((host_addr_len < 1) || (host_addr_len > uri_len))
+        {
+            //rt_kprintf("%s host_addr_len: %d error!\n", __FUNCTION__, host_addr_len);
+            rc = -1;
+            goto _exit;
+        }             
+
+        port_len = uri_len - 6 - host_addr_len - 1;
+        if (port_len >= 6 || port_len < 1)
+        {
+            rc = -1;
+            goto _exit;            
+        }   
+
+        strncpy(port_str, host_addr + host_addr_len + 1, port_len);
+        port_str[port_len] = '\0';
+        rt_kprintf("ipv4 address port: %s\n", port_str);
+    }
+
+    /* get host addr ok. */
+    {
+        /* resolve the host name. */
+        struct addrinfo hint;
+        int ret;
+
+        host_addr_new = rt_malloc(host_addr_len + 1);
+
+        if (!host_addr_new)
+        {
+            rc = -1;
+            goto _exit;
+        }
+
+        memcpy(host_addr_new, host_addr, host_addr_len);
+        host_addr_new[host_addr_len] = '\0';
+        rt_kprintf("[MQTT] HOST =  '%s'\n", host_addr_new);
+
+        memset(&hint, 0, sizeof(hint));
+
+        ret = getaddrinfo(host_addr_new, port_str, &hint, res);
+        if (ret != 0)
+        {
+            rt_kprintf("getaddrinfo err: %d '%s'\n", ret, host_addr_new);
+            rc = -1;
+            goto _exit;
+        }
+    }
+
+_exit:
+    if (host_addr_new != RT_NULL)
+    {
+        rt_free(host_addr_new);
+        host_addr_new = RT_NULL;
+    }
+    return rc;    
+}
+
 static int net_connect(MQTTClient *c)
 {
-    struct hostent *host = 0;
-    struct sockaddr_in sockaddr;
     int rc = -1;
+    struct addrinfo *addr_res = RT_NULL;
 
     c->sock = -1;
     c->next_packetid = 0;
 
-    host = gethostbyname(c->host);
-    if (host == 0)
+    // mqtt_resolve_uri 
+    rc = mqtt_resolve_uri(c, &addr_res);
+    if (rc < 0 || addr_res == RT_NULL)
     {
-        debug_printf("gethostbyname(%s) error!\n", c->host);
+        debug_printf("resolve uri err\n");
+        goto _exit;
+    } 
+
+    if ((c->sock = socket(addr_res->ai_family, SOCK_STREAM, 0)) == -1)
+    {
+        debug_printf("[MQTT] create socket error!\n");
         goto _exit;
     }
 
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = htons(c->port);
-    sockaddr.sin_addr = *((struct in_addr *)host->h_addr);
-    memset(&(sockaddr.sin_zero), 0, sizeof(sockaddr.sin_zero));
-
-    if ((c->sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    if ((rc = connect(c->sock, addr_res->ai_addr, addr_res->ai_addrlen)) == -1)
     {
-        debug_printf("create socket error!\n");
+        debug_printf("[MQTT] connect err!\n");
+        rc = -2;
         goto _exit;
-    }
-
-    if ((rc = connect(c->sock, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr))) == -1)
-    {
-        debug_printf("connect %s:%d error!\n", c->host, c->port);
-        return -2;
     }
 
 _exit:
+    if (addr_res)
+    {
+        freeaddrinfo(addr_res);
+    }
     return rc;
 }
 
@@ -286,6 +430,15 @@ static int MQTTDisconnect(MQTTClient *c)
     return rc;
 }
 
+/**
+ * This function subscribe specified mqtt topic.
+ *
+ * @param c the pointer of MQTT context structure
+ * @param topicFilter topic filter name
+ * @param qos requested QoS
+ *
+ * @return the error code, 0 on subscribe successfully.
+ */
 static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
 {
     int rc = PAHO_FAILURE;
@@ -729,8 +882,8 @@ int paho_mqtt_start(MQTTClient *client)
     result = rt_thread_init(tid,
                             "MQTT",
                             paho_mqtt_thread, client, // fun, parameter
-                            stack, stack_size,   // stack, size
-                            priority, 2          //priority, tick
+                            stack, stack_size,        // stack, size
+                            priority, 2               // priority, tick
                            );
 
     if (result == RT_EOK)
@@ -795,9 +948,16 @@ _exit:
     return rc;
 }
 
-/*
-[MQTTMessage] + [payload] + [topic] + '\0'
-*/
+/**
+ * This function publish message to specified mqtt topic.
+ * [MQTTMessage] + [payload] + [topic] + '\0'
+ *
+ * @param c the pointer of MQTT context structure
+ * @param topicFilter topic filter name
+ * @param message the pointer of MQTTMessage structure
+ *
+ * @return the error code, 0 on subscribe successfully.
+ */
 int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 {
     int rc = PAHO_FAILURE;
