@@ -15,9 +15,6 @@
 #define  debug_printf     rt_kprintf("[MQTT] ");rt_kprintf
 //#define  debug_printf(...)
 
-#define malloc      rt_malloc
-#define free        rt_free
-
 /*
  * resolve server address
  * @param server the server sockaddress
@@ -49,15 +46,25 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
     if (strncmp(uri, "tcp://", 6) == 0)
     {
         host_addr = uri + 6;
+
+#ifdef MQTT_USING_TLS
+        debug_printf(" Assert: tls mode is not support non-tls uri, please disable mqtt tls support!\n");
+        RT_ASSERT(0);
+#endif
     }
-    else if(strncmp(uri, "ssl://", 6) == 0)
+    else if (strncmp(uri, "ssl://", 6) == 0)
     {
         host_addr = uri + 6;
+
+#ifndef MQTT_USING_TLS
+        debug_printf("Assert: tls uri, please enable mqtt tls support!\n");
+        RT_ASSERT(0);
+#endif
     }
     else
     {
         rc = -1;
-        goto _exit;  
+        goto _exit;
     }
 
     /* ipv6 address */
@@ -72,7 +79,7 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         }
         host_addr_len = ptr - host_addr;
         if ((host_addr_len < 1) || (host_addr_len > uri_len))
-        {            
+        {
             rc = -1;
             goto _exit;
         }
@@ -81,7 +88,7 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         if (port_len >= 6 || port_len < 1)
         {
             rc = -1;
-            goto _exit;            
+            goto _exit;
         }
 
         strncpy(port_str, host_addr + host_addr_len + 2, port_len);
@@ -101,14 +108,14 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         {
             rc = -1;
             goto _exit;
-        }             
+        }
 
         port_len = uri_len - 6 - host_addr_len - 1;
         if (port_len >= 6 || port_len < 1)
         {
             rc = -1;
-            goto _exit;            
-        }   
+            goto _exit;
+        }
 
         strncpy(port_str, host_addr + host_addr_len + 1, port_len);
         port_str[port_len] = '\0';
@@ -131,7 +138,12 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
 
         memcpy(host_addr_new, host_addr, host_addr_len);
         host_addr_new[host_addr_len] = '\0';
-        debug_printf("HOST =  '%s'\n", host_addr_new);
+        debug_printf("HOST = '%s'\n", host_addr_new);
+
+#ifdef MQTT_USING_TLS
+        c->tls_session->host = rt_strdup(host_addr_new);
+        c->tls_session->port = rt_strdup(port_str);
+#endif
 
         memset(&hint, 0, sizeof(hint));
 
@@ -150,24 +162,102 @@ _exit:
         rt_free(host_addr_new);
         host_addr_new = RT_NULL;
     }
-    return rc;    
+    return rc;
 }
+
+#ifdef MQTT_USING_TLS
+static int mqtt_open_tls(MQTTClient *c)
+{
+    int tls_ret = 0;
+    const char *pers = "mqtt";
+
+    if (!c)
+        return -RT_ERROR;
+
+    c->tls_session = (MbedTLSSession *)rt_malloc(sizeof(MbedTLSSession));
+    if (c->tls_session == RT_NULL)
+    {
+        debug_printf("open tls failed, no memory for tls_session buffer malloc\n");
+        return -RT_ENOMEM;
+    }
+    memset(c->tls_session, 0x0, sizeof(MbedTLSSession));
+
+    c->tls_session->buffer_len = MQTT_TLS_READ_BUFFER;
+    c->tls_session->buffer = rt_malloc(c->tls_session->buffer_len);
+    if (c->tls_session->buffer == RT_NULL)
+    {
+        debug_printf("open tls failed, no memory for tls_session buffer malloc\n");
+        rt_free(c->tls_session);
+        c->tls_session = RT_NULL;
+        return -RT_ENOMEM;
+    }
+
+    if ((tls_ret = mbedtls_client_init(c->tls_session, (void *)pers, strlen(pers))) < 0)
+    {
+        debug_printf("mbedtls_client_init err return : -0x%x\n", -tls_ret);
+        return -RT_ERROR;
+    }
+
+    return RT_EOK;
+}
+#endif
 
 static int net_connect(MQTTClient *c)
 {
     int rc = -1;
     struct addrinfo *addr_res = RT_NULL;
 
+    int timeout = MQTT_SOCKET_TIMEO;
+
     c->sock = -1;
     c->next_packetid = 0;
+
+#ifdef MQTT_USING_TLS
+    if (mqtt_open_tls(c) < 0)
+    {
+        debug_printf("mqtt_open_tls err!\n");
+        return -RT_ERROR;
+    }
+#endif
 
     rc = mqtt_resolve_uri(c, &addr_res);
     if (rc < 0 || addr_res == RT_NULL)
     {
         debug_printf("resolve uri err\n");
         goto _exit;
-    } 
+    }
 
+#ifdef MQTT_USING_TLS
+    if (c->tls_session)
+    {
+        int tls_ret = 0;
+
+        if ((tls_ret = mbedtls_client_context(c->tls_session)) < 0)
+        {
+            debug_printf("mbedtls_client_context err return : -0x%x\n", -tls_ret);
+            return -RT_ERROR;
+        }
+
+        if ((tls_ret = mbedtls_client_connect(c->tls_session)) < 0)
+        {
+            debug_printf("mbedtls_client_connect err return : -0x%x\n", -tls_ret);
+            rc = -RT_ERROR;
+            goto _exit;
+        }
+        debug_printf("tls connect success...\n");
+
+        c->sock = c->tls_session->server_fd.fd;
+
+        /* set recv timeout option */
+        setsockopt(c->sock, SOL_SOCKET, SO_RCVTIMEO, (void *) &timeout,
+                   sizeof(timeout));
+        setsockopt(c->sock, SOL_SOCKET, SO_SNDTIMEO, (void *) &timeout,
+                   sizeof(timeout));
+
+        rc = 0;
+        goto _exit;
+    }
+#else
     if ((c->sock = socket(addr_res->ai_family, SOCK_STREAM, 0)) == -1)
     {
         debug_printf("create socket error!\n");
@@ -180,22 +270,32 @@ static int net_connect(MQTTClient *c)
         rc = -2;
         goto _exit;
     }
+#endif
 
 _exit:
     if (addr_res)
     {
         freeaddrinfo(addr_res);
+        addr_res = RT_NULL;
     }
     return rc;
 }
 
 static int net_disconnect(MQTTClient *c)
 {
+#ifdef MQTT_USING_TLS
+    if (c->tls_session)
+    {
+        mbedtls_client_close(c->tls_session);
+        c->sock = -1;
+    }
+#else
     if (c->sock >= 0)
     {
         closesocket(c->sock);
         c->sock = -1;
     }
+#endif
 
     return 0;
 }
@@ -209,7 +309,14 @@ static int sendPacket(MQTTClient *c, int length)
     tv.tv_usec = 0;
 
     setsockopt(c->sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval));
+
+#ifdef MQTT_USING_TLS
+    if (c->tls_session)
+        rc = mbedtls_client_write(c->tls_session, c->buf, length);
+#else
     rc = send(c->sock, c->buf, length, 0);
+#endif
+
     if (rc == length)
     {
         rc = 0;
@@ -229,6 +336,19 @@ static int net_read(MQTTClient *c, unsigned char *buf,  int len, int timeout)
 
     while (bytes < len)
     {
+
+#ifdef MQTT_USING_TLS
+        if (c->tls_session)
+            rc = mbedtls_client_read(c->tls_session, &buf[bytes], (size_t)(len - bytes));
+
+        if (rc <= 0)
+        {
+            bytes = -1;
+            break;
+        }
+        else
+            bytes += rc;
+#else
         rc = recv(c->sock, &buf[bytes], (size_t)(len - bytes), MSG_DONTWAIT);
 
         if (rc == -1)
@@ -241,6 +361,7 @@ static int net_read(MQTTClient *c, unsigned char *buf,  int len, int timeout)
         }
         else
             bytes += rc;
+#endif
 
         if (bytes >= len)
         {
@@ -661,15 +782,20 @@ _mqtt_start:
     for (i = 0; i < MAX_MESSAGE_HANDLERS; i++)
     {
         const char *topic = c->messageHandlers[i].topicFilter;
+        enum QoS qos = c->messageHandlers[i].qos;
 
-        if(topic == RT_NULL)
+        if (topic == RT_NULL)
             continue;
 
-        rc = MQTTSubscribe(c, topic, QOS2);
-        debug_printf("Subscribe #%d %s %s!\n", i, topic, (rc < 0) ? ("fail") : ("OK"));
+        rc = MQTTSubscribe(c, topic, qos);
+        debug_printf("Subscribe #%d %s %s!\n", i, topic, (rc < 0) || (rc == 0x80) ? ("fail") : ("OK"));
 
         if (rc != 0)
         {
+            if (rc == 0x80)
+            {
+                debug_printf("QoS config err!\n");
+            }
             goto _mqtt_disconnect;
         }
     }
@@ -823,7 +949,7 @@ int paho_mqtt_start(MQTTClient *client)
     int priority = RT_THREAD_PRIORITY_MAX / 3;
     char *stack;
 
-    tid = malloc(RT_ALIGN(sizeof(struct rt_thread), 8) + stack_size);
+    tid = rt_malloc(RT_ALIGN(sizeof(struct rt_thread), 8) + stack_size);
     if (!tid)
     {
         debug_printf("no memory for thread: MQTT\n");
@@ -875,7 +1001,7 @@ int MQTT_CMD(MQTTClient *c, const char *cmd)
         goto _exit;
     }
 
-    data = malloc(cmd_len);
+    data = rt_malloc(cmd_len);
     if (!data)
         goto _exit;
 
@@ -888,7 +1014,7 @@ int MQTT_CMD(MQTTClient *c, const char *cmd)
 
 _exit:
     if (data)
-        free(data);
+        rt_free(data);
 
     return rc;
 }
@@ -913,7 +1039,7 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
         goto exit;
 
     msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
-    data = malloc(msg_len);
+    data = rt_malloc(msg_len);
     if (!data)
         goto exit;
 
@@ -930,7 +1056,7 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 
 exit:
     if (data)
-        free(data);
+        rt_free(data);
 
     return rc;
 }
