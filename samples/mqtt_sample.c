@@ -10,39 +10,46 @@
  * MQTT URI farmat:
  * domain mode
  * tcp://iot.eclipse.org:1883
- * 
+ *
  * ipv4 mode
  * tcp://192.168.10.1:1883
  * ssl://192.168.10.1:1884
- * 
+ *
  * ipv6 mode
  * tcp://[fe80::20c:29ff:fe9a:a07e]:1883
  * ssl://[fe80::20c:29ff:fe9a:a07e]:1884
  */
-#define MQTT_URI				"tcp://iot.eclipse.org:1883"		
-#define MQTT_CLIENTID			"rtthread-mqtt"
-#define MQTT_USERNAME			"admin"
-#define MQTT_PASSWORD			"admin"
-#define MQTT_SUBTOPIC			"/mqtt/test"
-#define MQTT_PUBTOPIC			"/mqtt/test"
-#define MQTT_WILLMSG			"Goodbye!"
+#define MQTT_URI                "tcp://iot.eclipse.org:1883"
+#define MQTT_CLIENTID           "rtthread-mqtt"
+#define MQTT_USERNAME           "admin"
+#define MQTT_PASSWORD           "admin"
+#define MQTT_SUBTOPIC           "/mqtt/test"
+#define MQTT_PUBTOPIC           "/mqtt/test"
+#define MQTT_WILLMSG            "Goodbye!"
 
 /* define MQTT client context */
 static MQTTClient client;
 
 static void mqtt_sub_callback(MQTTClient *c, MessageData *msg_data)
 {
-	*((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt sub callback: %s %s\n", msg_data->topicName->lenstring.data, (char *)msg_data->message->payload);
+    *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
+    rt_kprintf("mqtt sub callback: %.*s %.*s\n",
+               msg_data->topicName->lenstring.len,
+               msg_data->topicName->lenstring.data,
+               msg_data->message->payloadlen,
+               (char *)msg_data->message->payload);
 
     return;
 }
 
 static void mqtt_sub_default_callback(MQTTClient *c, MessageData *msg_data)
 {
-	*((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt sub default callback: %s %s\n", msg_data->topicName->lenstring.data, (char *)msg_data->message->payload);
-
+    *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
+    rt_kprintf("mqtt sub default callback: %.*s %.*s\n",
+               msg_data->topicName->lenstring.len,
+               msg_data->topicName->lenstring.data,
+               msg_data->message->payloadlen,
+               (char *)msg_data->message->payload);
     return;
 }
 
@@ -73,6 +80,11 @@ static void mq_start(void)
     /* init condata param by using MQTTPacket_connectData_initializer */
     MQTTPacket_connectData condata = MQTTPacket_connectData_initializer;
 
+    static int is_started = 0;
+    if (is_started)
+    {
+        return;
+    }
     /* config MQTT context param */
     {
         client.uri = MQTT_URI;
@@ -89,18 +101,18 @@ static void mq_start(void)
         client.condata.willFlag = 1;
         client.condata.will.qos = 1;
         client.condata.will.retained = 0;
-        client.condata.will.topicName.cstring = MQTT_PUBTOPIC; 
-        client.condata.will.message.cstring = MQTT_WILLMSG;     
+        client.condata.will.topicName.cstring = MQTT_PUBTOPIC;
+        client.condata.will.message.cstring = MQTT_WILLMSG;
 
         /* malloc buffer. */
         client.buf_size = client.readbuf_size = 1024;
         client.buf = malloc(client.buf_size);
         client.readbuf = malloc(client.readbuf_size);
-        if(!(client.buf && client.readbuf))
+        if (!(client.buf && client.readbuf))
         {
-            printf("no memory for MQTT client buffer!\n");
+            rt_kprintf("no memory for MQTT client buffer!\n");
             goto _exit;
-        }           
+        }
 
         /* set event callback function */
         client.connect_callback = mqtt_connect_callback;
@@ -110,13 +122,15 @@ static void mq_start(void)
         /* set subscribe table and event callback */
         client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
         client.messageHandlers[0].callback = mqtt_sub_callback;
+        client.messageHandlers[0].qos = QOS1;
 
         /* set default subscribe event callback */
         client.defaultMessageHandler = mqtt_sub_default_callback;
     }
 
     /* run mqtt client */
-	paho_mqtt_start(&client);
+    paho_mqtt_start(&client);
+    is_started = 1;
 
 _exit:
     return;
@@ -129,17 +143,17 @@ _exit:
  *
  * @return none
  */
-static void mq_publish(const char * send_str)
+static void mq_publish(const char *send_str)
 {
     MQTTMessage message;
-	const char *msg_str = send_str;
-	const char *topic = MQTT_PUBTOPIC;
-    message.qos = 1;
+    const char *msg_str = send_str;
+    const char *topic = MQTT_PUBTOPIC;
+    message.qos = QOS1;
     message.retained = 0;
-    message.payload = (void*)msg_str;
+    message.payload = (void *)msg_str;
     message.payloadlen = strlen(message.payload);
 
-	MQTTPublish(&client, topic, &message);
+    MQTTPublish(&client, topic, &message);
 
     return;
 }
@@ -153,14 +167,14 @@ MSH_CMD_EXPORT(mq_start, startup mqtt client);
 
 int mq_pub(int argc, char **argv)
 {
-	if(argc != 2 )
-	{
-		printf("More than two input parameters err!!\n");
-		return 0;
-	}    
+    if (argc != 2)
+    {
+        rt_kprintf("More than two input parameters err!!\n");
+        return 0;
+    }
     mq_publish(argv[1]);
 
-	return 0;
+    return 0;
 }
 MSH_CMD_EXPORT(mq_pub, publish mqtt msg);
 #endif /* FINSH_USING_MSH */

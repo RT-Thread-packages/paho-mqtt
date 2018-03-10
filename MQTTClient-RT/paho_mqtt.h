@@ -5,13 +5,23 @@
 
 #include <MQTTPacket.h>
 
-#ifndef PKG_PAHOMQTT_SUBSCRIBE_HANDLERS 
+#ifdef MQTT_USING_TLS
+#include <tls_client.h>
+#endif
+
+#ifndef PKG_PAHOMQTT_SUBSCRIBE_HANDLERS
 #define MAX_MESSAGE_HANDLERS    1 /* redefinable - how many subscriptions do you want? */
 #else
 #define MAX_MESSAGE_HANDLERS    PKG_PAHOMQTT_SUBSCRIBE_HANDLERS
 #endif
 
 #define MAX_PACKET_ID           65535 /* according to the MQTT specification - do not change! */
+
+#define MQTT_SOCKET_TIMEO       6000
+
+#ifdef MQTT_USING_TLS
+#define MQTT_TLS_READ_BUFFER    4096
+#endif
 
 enum QoS { QOS0, QOS1, QOS2 };
 
@@ -30,8 +40,8 @@ typedef struct MQTTMessage
 
 typedef struct MessageData
 {
-    MQTTMessage* message;
-    MQTTString* topicName;
+    MQTTMessage *message;
+    MQTTString *topicName;
 } MessageData;
 
 typedef struct MQTTClient MQTTClient;
@@ -50,17 +60,18 @@ struct MQTTClient
     int isconnected;
     uint32_t tick_ping;
 
-    void (*connect_callback) (MQTTClient*);
-    void (*online_callback) (MQTTClient*);
-    void (*offline_callback) (MQTTClient*);
+    void (*connect_callback)(MQTTClient *);
+    void (*online_callback)(MQTTClient *);
+    void (*offline_callback)(MQTTClient *);
 
     struct MessageHandlers
     {
-        const char* topicFilter;
-        void (*callback) (MQTTClient*, MessageData*);
+        const char *topicFilter;
+        void (*callback)(MQTTClient *, MessageData *);
+        enum QoS qos;
     } messageHandlers[MAX_MESSAGE_HANDLERS]; /* Message handlers are indexed by subscription topic */
 
-    void (*defaultMessageHandler) (MQTTClient*, MessageData*);
+    void (*defaultMessageHandler)(MQTTClient *, MessageData *);
 
     /* publish interface */
 #if defined(RT_USING_POSIX) && defined(RT_USING_DFS_NET)
@@ -70,6 +81,10 @@ struct MQTTClient
     int pub_port;
 #endif /* RT_USING_POSIX && RT_USING_DFS_NET */
 
+#ifdef MQTT_USING_TLS
+    /* mbedtls session struct*/
+    MbedTLSSession *tls_session;
+#endif
 };
 
 /**
@@ -90,6 +105,6 @@ extern int paho_mqtt_start(MQTTClient *client);
  *
  * @return the error code, 0 on subscribe successfully.
  */
-extern int MQTTPublish(MQTTClient* c, const char* topicName, MQTTMessage* message); /* copy */
+extern int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message); /* copy */
 
 #endif /* __PAHO_MQTT_H__ */
