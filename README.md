@@ -8,6 +8,7 @@ RT-Thread MQTT 客户端功能特点：
 - 断线自动重连
 - pipe 模型，非阻塞 API
 - 事件回调机制
+- TLS 加密传输
 
 ## 2、获取方式
 - 使用 menuconfig
@@ -16,6 +17,8 @@ RT-Thread MQTT 客户端功能特点：
       IOT internet of things --->
           [*] Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms
           [*]     Enable MQTT example
+          [ ]     Enable MQTT test
+          [ ]     Enable support tls protocol
           (1)     Max pahomqtt subscribe topic handlers
                   pahomqtt version (latest_version)
 ```
@@ -23,9 +26,11 @@ RT-Thread MQTT 客户端功能特点：
 ## 3、示例介绍
 ### 3.1 获取示例
 
-- 配置使能示例选项 `Enable MQTT example`;
-- 设置 MQTT 能订阅的最大 topic 主题数量 `Max pahomqtt subscribe topic handlers`;
-- 配置包版本选为最新版 `latest_version` .
+- 配置使能示例选项 `Enable MQTT example`
+- 配置使能测试例程 `Enable MQTT test`
+- 配置使能 TLS 安全传输选项 `Enable support tls protocol`
+- 设置 MQTT 能订阅的最大 topic 主题数量 `Max pahomqtt subscribe topic handlers`
+- 配置包版本选为最新版 `latest_version`
 
 ![](./doc/image/paho-mqtt-menuconfig.png)
 
@@ -65,9 +70,64 @@ msh />mqtt sub callback: /mqtt/test hello-rtthread
 msh />
 ```
 
-## 4、 关键代码及 API 说明
+## 4、 测试介绍
 
-### 4.1 callback
+### 4.1 使能测试程序
+
+`tests/mqtt_test.c` 测试程序提供了一个`客户端`、`服务器`稳定性测试的例程，
+用户可以通过简单配置 MQTT 服务器 URI，QOS 消息服务质量，既可完成 MQTT 客户端和服务器端的测试。
+
+使用 MQTT 测试程序需要在 `menuconfig`  中使能 `Enable MQTT test`。
+
+- 配置使能测试例程选项 `Enable MQTT test`
+
+### 4.2 修改测试程序
+
+将 `tests/mqtt_test.c` 程序中的如下配置，对应修改为您要测试的 MQTT 服务器配置信息即可。
+
+```
+#define MQTT_TEST_SERVER_URI    "tcp://iot.eclipse.org:1883"
+#define MQTT_CLIENTID           "rtthread-mqtt"
+#define MQTT_USERNAME           "admin"
+#define MQTT_PASSWORD           "admin"
+#define MQTT_SUBTOPIC           "/mqtt/test"
+#define MQTT_PUBTOPIC           "/mqtt/test"
+#define MQTT_WILLMSG            "Goodbye!"
+#define MQTT_TEST_QOS           1
+```
+
+### 4.3 运行测试程序
+
+- 使用 `mqtt_test start` 命令启动 MQTT 测试程序
+- 使用 `mqtt_test stop` 命令停止 MQTT 测试程序
+
+运行日志如下所示：
+
+```
+msh />mqtt_test start
+[tls]mbedtls client struct init success...
+[MQTT] ipv4 address port: 1884
+
+...
+
+[tls]Certificate verified success...
+[MQTT] tls connect success...
+[MQTT] Subscribe #0 /mqtt/test OK!
+test start at '946725803'
+==== MQTT Stability test ====
+Server: ssl://yourserverhost.com:1884
+QoS   : 1
+Test duration(sec)            : 49463
+Number of published  packages : 98860
+Number of subscribed packages : 98860
+Packet loss rate              : 0.00%
+Number of reconnections       : 0
+==== MQTT Stability test stop ====
+```
+
+## 5、 关键代码及 API 说明
+
+### 5.1 callback
 paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相关事件的处理， 在 `MQTTClient` 结构体实例中注册使用。
 
 |callback 名称                           |描述|
@@ -80,7 +140,7 @@ paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相
 
 用户可以使用 `defaultMessageHandler` 回调默认处理接收到的订阅消息，也可以使用 `messageHandlers` 订阅列表，为 `messageHandlers` 数组中对应的每一个 topic 提供一个独立的订阅消息接收回调。
 
-### 4.2 MQTT_URI
+### 5.2 MQTT_URI
 
 paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4和ipv6地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户需要按照要求填写可用的 URI 即可。
 
@@ -98,7 +158,7 @@ tcp://[fe80::20c:29ff:fe9a:a07e]:1883
 ssl://[fe80::20c:29ff:fe9a:a07e]:1884
 ```
 
-### 4.3 paho_mqtt_start 接口
+### 5.3 paho_mqtt_start 接口
 - 功能： 启动 MQTT 客户端。
 
 - 函数原型：
@@ -112,7 +172,7 @@ int paho_mqtt_start(MQTTClient *client)
 |client                             |MQTT 客户端实例对象|
 |return                             |0 : 成功; 其他 : 失败|
 
-### 4.4 MQTTPublish 接口
+### 5.4 MQTTPublish 接口
 - 功能： 向指定的 topic 主题发布 MQTT 消息。
 
 - 函数原型：
@@ -128,12 +188,12 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 |message                            |MQTT 消息内容|
 |return                             |0 : 成功; 其他 : 失败|
 
-## 5、注意事项
+## 6、注意事项
 
 - 正确填写 `MQTT_USERNAME` 和 `MQTT_PASSWORD`  
 如果 `MQTT_USERNAME` 和 `MQTT_PASSWORD` 填写错误，MQTT 客户端无法正确连接到 MQTT 服务器。
 
-## 6、参考资料
+## 7、参考资料
 
 - [MQTT 官网](http://mqtt.org/)
 - [Paho 官网](http://www.eclipse.org/paho/downloads.php)
