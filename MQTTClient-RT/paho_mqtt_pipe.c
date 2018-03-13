@@ -46,19 +46,15 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
     if (strncmp(uri, "tcp://", 6) == 0)
     {
         host_addr = uri + 6;
-
-#ifdef MQTT_USING_TLS
-        debug_printf(" Assert: tls mode is not support non-tls uri, please disable mqtt tls support!\n");
-        RT_ASSERT(0);
-#endif
     }
     else if (strncmp(uri, "ssl://", 6) == 0)
     {
         host_addr = uri + 6;
 
 #ifndef MQTT_USING_TLS
-        debug_printf("Assert: tls uri, please enable mqtt tls support!\n");
-        RT_ASSERT(0);
+        debug_printf("Warning: tls uri, please enable mqtt tls support!\n");
+        rc = -1;
+        goto _exit;
 #endif
     }
     else
@@ -141,8 +137,11 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         debug_printf("HOST = '%s'\n", host_addr_new);
 
 #ifdef MQTT_USING_TLS
-        c->tls_session->host = rt_strdup(host_addr_new);
-        c->tls_session->port = rt_strdup(port_str);
+        if (c->tls_session)
+        {
+            c->tls_session->host = rt_strdup(host_addr_new);
+            c->tls_session->port = rt_strdup(port_str);
+        }
 #endif
 
         memset(&hint, 0, sizeof(hint));
@@ -213,10 +212,17 @@ static int net_connect(MQTTClient *c)
     c->next_packetid = 0;
 
 #ifdef MQTT_USING_TLS
-    if (mqtt_open_tls(c) < 0)
+    if (strncmp(c->uri, "ssl://", 6) == 0)
     {
-        debug_printf("mqtt_open_tls err!\n");
-        return -RT_ERROR;
+        if (mqtt_open_tls(c) < 0)
+        {
+            debug_printf("mqtt_open_tls err!\n");
+            return -RT_ERROR;
+        }
+    }
+    else
+    {
+        c->tls_session = RT_NULL;
     }
 #endif
 
@@ -257,7 +263,8 @@ static int net_connect(MQTTClient *c)
         rc = 0;
         goto _exit;
     }
-#else
+#endif
+
     if ((c->sock = socket(addr_res->ai_family, SOCK_STREAM, 0)) == -1)
     {
         debug_printf("create socket error!\n");
@@ -270,7 +277,6 @@ static int net_connect(MQTTClient *c)
         rc = -2;
         goto _exit;
     }
-#endif
 
 _exit:
     if (addr_res)
@@ -289,13 +295,15 @@ static int net_disconnect(MQTTClient *c)
         mbedtls_client_close(c->tls_session);
         c->sock = -1;
     }
-#else
+
+    return 0;
+#endif
+
     if (c->sock >= 0)
     {
         closesocket(c->sock);
         c->sock = -1;
     }
-#endif
 
     return 0;
 }
@@ -312,11 +320,15 @@ static int sendPacket(MQTTClient *c, int length)
 
 #ifdef MQTT_USING_TLS
     if (c->tls_session)
+    {
         rc = mbedtls_client_write(c->tls_session, c->buf, length);
-#else
-    rc = send(c->sock, c->buf, length, 0);
+        goto _continue;
+    }
 #endif
 
+    rc = send(c->sock, c->buf, length, 0);
+
+_continue:
     if (rc == length)
     {
         rc = 0;
@@ -339,16 +351,21 @@ static int net_read(MQTTClient *c, unsigned char *buf,  int len, int timeout)
 
 #ifdef MQTT_USING_TLS
         if (c->tls_session)
-            rc = mbedtls_client_read(c->tls_session, &buf[bytes], (size_t)(len - bytes));
-
-        if (rc <= 0)
         {
-            bytes = -1;
-            break;
+            rc = mbedtls_client_read(c->tls_session, &buf[bytes], (size_t)(len - bytes));
+            if (rc <= 0)
+            {
+                bytes = -1;
+                break;
+            }
+            else
+            {
+                bytes += rc;
+            }
+            goto _continue;
         }
-        else
-            bytes += rc;
-#else
+#endif
+
         rc = recv(c->sock, &buf[bytes], (size_t)(len - bytes), MSG_DONTWAIT);
 
         if (rc == -1)
@@ -361,8 +378,8 @@ static int net_read(MQTTClient *c, unsigned char *buf,  int len, int timeout)
         }
         else
             bytes += rc;
-#endif
 
+_continue:
         if (bytes >= len)
         {
             break;
@@ -949,6 +966,13 @@ int paho_mqtt_start(MQTTClient *client)
     int priority = RT_THREAD_PRIORITY_MAX / 3;
     char *stack;
 
+    static int is_started = 0;
+    if (is_started)
+    {
+        debug_printf("paho mqtt has already started!\n");
+        return 0;
+    }    
+
     tid = rt_malloc(RT_ALIGN(sizeof(struct rt_thread), 8) + stack_size);
     if (!tid)
     {
@@ -967,6 +991,7 @@ int paho_mqtt_start(MQTTClient *client)
     if (result == RT_EOK)
     {
         rt_thread_startup(tid);
+        is_started = 1;
     }
 
     return 0;

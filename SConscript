@@ -15,6 +15,9 @@ else:
 if GetDepend(['PKG_USING_PAHOMQTT_EXAMPLE']):
     src += Glob('samples/*.c')
 
+if GetDepend(['PKG_USING_PAHOMQTT_TEST']):
+    src += Glob('tests/*.c')
+
 path = [cwd + '/MQTTPacket/src']
 path += [cwd + '/MQTTClient-RT']
 
