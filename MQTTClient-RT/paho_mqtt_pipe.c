@@ -787,12 +787,14 @@ _mqtt_start:
     rc = net_connect(c);
     if (rc != 0)
     {
+        debug_printf("Net connect error(%d)\n", rc);
         goto _mqtt_restart;
     }
 
     rc = MQTTConnect(c);
     if (rc != 0)
     {
+        debug_printf("MQTT connect error(%d): %s\n", rc, MQTTSerialize_connack_string(rc));
         goto _mqtt_restart;
     }
 

@@ -212,3 +212,27 @@ int MQTTSerialize_pingreq(unsigned char* buf, int buflen)
 {
 	return MQTTSerialize_zero(buf, buflen, PINGREQ);
 }
+
+const char *MQTTSerialize_connack_string(unsigned char connack_rc)
+{
+#define PAHO_STRING(s)                 #s
+#define PAHO_TOSTRING(s)               PAHO_STRING(s)
+
+    switch (connack_rc)
+    {
+    case MQTT_CONNECTION_ACCEPTED:
+        return PAHO_TOSTRING(MQTT_CONNECTION_ACCEPTED);
+    case MQTT_UNNACCEPTABLE_PROTOCOL:
+        return PAHO_TOSTRING(MQTT_UNNACCEPTABLE_PROTOCOL);
+    case MQTT_CLIENTID_REJECTED:
+        return PAHO_TOSTRING(MQTT_CLIENTID_REJECTED);
+    case MQTT_SERVER_UNAVAILABLE:
+        return PAHO_TOSTRING(MQTT_SERVER_UNAVAILABLE);
+    case MQTT_BAD_USERNAME_OR_PASSWORD:
+        return PAHO_TOSTRING(MQTT_BAD_USERNAME_OR_PASSWORD);
+    case MQTT_NOT_AUTHORIZED:
+        return PAHO_TOSTRING(MQTT_NOT_AUTHORIZED);
+    default:
+        return "UNKNOWN_ERROR";
+    }
+}

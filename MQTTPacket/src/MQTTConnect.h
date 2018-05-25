@@ -25,6 +25,15 @@
   #define DLLExport
 #endif
 
+enum connack_return_codes
+{
+    MQTT_CONNECTION_ACCEPTED = 0,
+    MQTT_UNNACCEPTABLE_PROTOCOL = 1,
+    MQTT_CLIENTID_REJECTED = 2,
+    MQTT_SERVER_UNAVAILABLE = 3,
+    MQTT_BAD_USERNAME_OR_PASSWORD = 4,
+    MQTT_NOT_AUTHORIZED = 5,
+};
 
 typedef union
 {
@@ -132,5 +141,6 @@ DLLExport int MQTTDeserialize_connack(unsigned char* sessionPresent, unsigned ch
 
 DLLExport int MQTTSerialize_disconnect(unsigned char* buf, int buflen);
 DLLExport int MQTTSerialize_pingreq(unsigned char* buf, int buflen);
+const char *MQTTSerialize_connack_string(unsigned char connack_rc);
 
 #endif /* MQTTCONNECT_H_ */
