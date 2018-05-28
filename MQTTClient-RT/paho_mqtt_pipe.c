@@ -12,6 +12,20 @@
 #include "MQTTPacket.h"
 #include "paho_mqtt.h"
 
+#define DBG_ENABLE
+#define DBG_SECTION_NAME    "[MQTT] "
+#ifdef MQTT_DEBUG
+#define DBG_LEVEL           DBG_LOG
+#else
+#define DBG_LEVEL           DBG_INFO
+#endif /* MQTT_DEBUG */
+#define DBG_COLOR
+#include <rtdbg.h>
+
+#ifndef LOG_D
+#error "Please using the RT-Thread latest version source code which on github"
+#endif
+
 /*
  * resolve server address
  * @param server the server sockaddress
