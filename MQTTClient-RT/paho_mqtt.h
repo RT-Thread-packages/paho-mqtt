@@ -23,6 +23,21 @@
 #define MQTT_TLS_READ_BUFFER    4096
 #endif
 
+#undef DBG_SECTION_NAME
+#undef DBG_LEVEL
+#undef DBG_COLOR
+#undef DBG_ENABLE
+
+#define DBG_ENABLE
+#define DBG_SECTION_NAME    "[MQTT] "
+#ifdef MQTT_DEBUG
+#define DBG_LEVEL           DBG_LOG
+#else
+#define DBG_LEVEL           DBG_INFO
+#endif /* MQTT_DEBUG */
+#define DBG_COLOR
+#include <rtdbg.h>
+
 enum __attribute__ ((aligned (4))) QoS { QOS0, QOS1, QOS2 };
 
 /* all failure return codes must be negative */
