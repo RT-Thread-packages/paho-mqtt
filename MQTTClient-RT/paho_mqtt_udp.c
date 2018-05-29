@@ -18,8 +18,8 @@
 #define malloc      rt_malloc
 #define free        rt_free
 
-#if !defined(LWIP_NETIF_LOOPBACK) || (LWIP_NETIF_LOOPBACK == 0)
-#error "must enable (LWIP_NETIF_LOOPBACK = 1) for publish!"
+#ifndef RT_LWIP_NETIF_LOOPBACK
+#error "must enable RT_LWIP_NETIF_LOOPBACK for publish!"
 #endif /* LWIP_NETIF_LOOPBACK */
 
 static uint16_t pub_port = 7000;
