@@ -23,7 +23,7 @@
 #include <rtdbg.h>
 
 #ifndef LOG_D
-#error "Please using the RT-Thread latest version source code which on github"
+#error "Please update the 'rtdbg.h' file to GitHub latest version (https://github.com/RT-Thread/rt-thread/blob/master/include/rtdbg.h)"
 #endif
 
 /*
