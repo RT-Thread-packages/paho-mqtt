@@ -20,7 +20,6 @@
  * ssl://[fe80::20c:29ff:fe9a:a07e]:1884
  */
 #define MQTT_URI                "tcp://iot.eclipse.org:1883"
-#define MQTT_CLIENTID           "rtthread-mqtt"
 #define MQTT_USERNAME           "admin"
 #define MQTT_PASSWORD           "admin"
 #define MQTT_SUBTOPIC           "/mqtt/test"
@@ -79,6 +78,7 @@ static void mq_start(void)
 {
     /* init condata param by using MQTTPacket_connectData_initializer */
     MQTTPacket_connectData condata = MQTTPacket_connectData_initializer;
+    static char cid[20] = { 0 };
 
     static int is_started = 0;
     if (is_started)
@@ -89,9 +89,11 @@ static void mq_start(void)
     {
         client.uri = MQTT_URI;
 
+        /* generate the random client ID */
+        rt_snprintf(cid, sizeof(cid), "rtthread%d", rt_tick_get());
         /* config connect param */
         memcpy(&client.condata, &condata, sizeof(condata));
-        client.condata.clientID.cstring = MQTT_CLIENTID;
+        client.condata.clientID.cstring = cid;
         client.condata.keepAliveInterval = 60;
         client.condata.cleansession = 1;
         client.condata.username.cstring = MQTT_USERNAME;
