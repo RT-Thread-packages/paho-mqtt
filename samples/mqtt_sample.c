@@ -4,6 +4,12 @@
 
 #include <rtthread.h>
 
+#define DBG_ENABLE
+#define DBG_SECTION_NAME    "[MQTT] "
+#define DBG_LEVEL           DBG_LOG
+#define DBG_COLOR
+#include <rtdbg.h>
+
 #include "paho_mqtt.h"
 
 /**
@@ -32,7 +38,7 @@ static MQTTClient client;
 static void mqtt_sub_callback(MQTTClient *c, MessageData *msg_data)
 {
     *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt sub callback: %.*s %.*s\n",
+    LOG_D("mqtt sub callback: %.*s %.*s",
                msg_data->topicName->lenstring.len,
                msg_data->topicName->lenstring.data,
                msg_data->message->payloadlen,
@@ -44,7 +50,7 @@ static void mqtt_sub_callback(MQTTClient *c, MessageData *msg_data)
 static void mqtt_sub_default_callback(MQTTClient *c, MessageData *msg_data)
 {
     *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt sub default callback: %.*s %.*s\n",
+    LOG_D("mqtt sub default callback: %.*s %.*s",
                msg_data->topicName->lenstring.len,
                msg_data->topicName->lenstring.data,
                msg_data->message->payloadlen,
@@ -54,17 +60,17 @@ static void mqtt_sub_default_callback(MQTTClient *c, MessageData *msg_data)
 
 static void mqtt_connect_callback(MQTTClient *c)
 {
-    rt_kprintf("inter mqtt_connect_callback! \n");
+    LOG_D("inter mqtt_connect_callback!");
 }
 
 static void mqtt_online_callback(MQTTClient *c)
 {
-    rt_kprintf("inter mqtt_online_callback! \n");
+    LOG_D("inter mqtt_online_callback!");
 }
 
 static void mqtt_offline_callback(MQTTClient *c)
 {
-    rt_kprintf("inter mqtt_offline_callback! \n");
+    LOG_D("inter mqtt_offline_callback!");
 }
 
 /**
@@ -112,7 +118,7 @@ static void mq_start(void)
         client.readbuf = malloc(client.readbuf_size);
         if (!(client.buf && client.readbuf))
         {
-            rt_kprintf("no memory for MQTT client buffer!\n");
+            LOG_E("no memory for MQTT client buffer!");
             goto _exit;
         }
 
