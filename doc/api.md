@@ -1,31 +1,82 @@
-# Hello API
+# MQTT API 介绍
 
-[MQTT](http://mqtt.org/)（Message Queuing Telemetry Transport，消息队列遥测传输协议），是一种基于发布/订阅（publish/subscribe）模式的“轻量级”通讯协议，该协议构建于TCP/IP协议上，由 IBM 在 1999 年发布。
+## 订阅列表
 
-## 打招呼
+paho mqtt 中采用订阅列表的形式进行多个 Topic 的订阅，订阅列表存储在 `MQTTClient` 结构体实例中，在 MQTT 启动前配置，如下所示：
 
-> 注意：对于函数介绍，必须遵循下面的格式
+```.{c}
+... // 省略代码
 
-`int hello_func(void)`
+MQTTClient client;
 
-> 在这里需要介绍 hello_func 函数的主要功能
+... // 省略代码
 
-| 参数              | 描述                                |
-|:------------------|:------------------------------------|
-|`无`               | 无参数                              |
-| **返回**          | **描述**                                |
-|0                  | 正确执行                            |
-|-1                 | 失败                                |
-
-示例(可选)
-
-```c
-#include <hello.h>
-
-int func()
-{
-    hello_func();
-    
-    return 0;
-}
+/* set subscribe table and event callback */
+client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
+client.messageHandlers[0].callback = mqtt_sub_callback;
+client.messageHandlers[0].qos = QOS1;
 ```
+详细的代码参考 `samples/mqtt_sample.c` 中的 `mq_start` 函数。
+
+订阅列表的最大数量是由 `menuconfig` 中的 `Max pahomqtt subscribe topic handlers` 选项进行配置的。 
+
+## callback
+paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相关事件的处理， 在 `MQTTClient` 结构体实例中注册使用。
+
+|callback 名称                           |描述|
+|:-----                                  |:----|
+|connect_callback                        |MQTT 连接成功的回调|
+|online_callback                         |MQTT 客户端成功上线的回调|
+|offline_callback                        |MQTT 客户端掉线的回调|
+|defaultMessageHandler                   |默认的订阅消息接收回调|
+|messageHandlers[x].callback             |订阅列表中对应的订阅消息接收回调|
+
+用户可以使用 `defaultMessageHandler` 回调默认处理接收到的订阅消息，也可以使用 `messageHandlers` 订阅列表，为 `messageHandlers` 数组中对应的每一个 topic 提供一个独立的订阅消息接收回调。
+
+## MQTT_URI
+
+paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4和ipv6地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户需要按照要求填写可用的 URI 即可。
+
+示例 URI：
+```.{c}
+domain 类型
+tcp://iot.eclipse.org:1883
+
+ipv4 类型
+tcp://192.168.10.1:1883
+ssl://192.168.10.1:1884
+
+ipv6 类型
+tcp://[fe80::20c:29ff:fe9a:a07e]:1883
+ssl://[fe80::20c:29ff:fe9a:a07e]:1884
+```
+
+## paho_mqtt_start 接口
+- 功能： 启动 MQTT 客户端。
+
+- 函数原型：
+```C
+int paho_mqtt_start(MQTTClient *client)
+```
+- 函数参数：
+
+|参数                               |描述|
+|:-----                             |:----|
+|client                             |MQTT 客户端实例对象|
+|return                             |0 : 成功; 其他 : 失败|
+
+## MQTTPublish 接口
+- 功能： 向指定的 topic 主题发布 MQTT 消息。
+
+- 函数原型：
+```C
+int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
+```
+- 函数参数：
+
+|参数                               |描述|
+|:-----                             |:----|
+|c                                  |MQTT 客户端实例对象|
+|topicName                          |MQTT 消息发布主题|
+|message                            |MQTT 消息内容|
+|return                             |0 : 成功; 其他 : 失败|
