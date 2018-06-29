@@ -32,7 +32,7 @@ RT-Thread MQTT 客户端功能特点：
 - 设置 MQTT 能订阅的最大 topic 主题数量 `Max pahomqtt subscribe topic handlers`
 - 配置包版本选为最新版 `latest_version`
 
-![](./doc/image/paho-mqtt-menuconfig.png)
+![](./doc/figures/paho-mqtt-menuconfig.png)
 
 ### 3.2 运行示例
 `samples/mqtt_sample.c` 例程提供了一个基础的 MQTT 发布订阅演示，在 RT-Thread MSH 中运行 MQTT 示例，需要开启 MSH 的支持。
