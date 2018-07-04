@@ -13,7 +13,7 @@
 
 ## 示例代码讲解
 
-下面讲解 RT-Thread  提供的  MQTT 示例代码，MQTT 示例代码如下：
+下面讲解 RT-Thread  提供的  MQTT 示例代码，测试服务器使用 Eclipse 的测试服务器，地址 `iot.eclipse.org` ，端口 `1883，`，MQTT 示例代码如下：
 
 ```c
 #include <stdlib.h>
@@ -29,12 +29,12 @@
 #include <rtdbg.h>
 
 #include "paho_mqtt.h"
-#define MQTT_URI                "tcp://iot.eclipse.org:1883"
+#define MQTT_URI                "tcp://iot.eclipse.org:1883" // 配置测试服务器地址
 #define MQTT_USERNAME           "admin"
 #define MQTT_PASSWORD           "admin"
-#define MQTT_SUBTOPIC           "/mqtt/test"
-#define MQTT_PUBTOPIC           "/mqtt/test"
-#define MQTT_WILLMSG            "Goodbye!"
+#define MQTT_SUBTOPIC           "/mqtt/test"            // 设置订阅主题
+#define MQTT_PUBTOPIC           "/mqtt/test"            // 设置推送主题
+#define MQTT_WILLMSG            "Goodbye!"              // 设置遗言消息
 
 /* 定义 MQTT 客户端环境结构体 */
 static MQTTClient client;
@@ -200,9 +200,8 @@ MSH_CMD_EXPORT(mq_pub, publish mqtt msg);
 ```
 
 ## 运行示例
-在 msh 中运行上述功能示例代码，可以实现向服务器订阅主题和向特定主题推送消息的功能。
-
-测试服务器使用 Eclipse 的测试服务器，地址 `iot.eclipse.org` ，端口 `1883`。功能示例运行效果如下：
+在 msh 中运行上述功能示例代码，可以实现向服务器订阅主题和向特定主题推送消息的功能，
+功能示例运行效果如下：
 
 启动 MQTT 客户端：
 ```shell
