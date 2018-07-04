@@ -10,11 +10,11 @@ pahomqtt
 ├───docs 
 │   └───figures                     // 文档使用图片
 │   │   api.md                      // API 使用说明
-│   │   introduction.md             // 软件包详细介绍
+│   │   introduction.md             // 介绍文档
 │   │   principle.md                // 实现原理
 │   │   README.md                   // 文档结构说明  
 │   │   samples.md                  // 软件包示例
-│   │   user-guide.md               // 使用指南
+│   │   user-guide.md               // 使用说明
 │   └───version.md                  // 版本
 ├───MQTTClient-RT                   // 移植文件
 ├───MQTTPacket                      // 源文件

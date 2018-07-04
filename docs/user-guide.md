@@ -2,9 +2,19 @@
 
 ## 准备工作
 
-在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，选中 paho-mqtt 软件包，然后使用 `pkgs--update` 命令下载软件包并添加到工程中即可。
+首先我们需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，选中 paho-mqtt 软件包，进行配置。操作流程如下图所示：
 
-![1530238326775](figures/1530238326775.png)
+![1530238326775](figures/select_mqtt_package.png)
+
+开启 MQTT 示例：
+
+![1530693891054](figures/open_mqtt_example.png)
+
+接下来使用 pkgs--update 命令下载软件包并添加到工程中即可，
+
+## 使用流程
+
+## 运行效果
 
 ## 测试介绍
 
