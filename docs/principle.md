@@ -2,7 +2,7 @@
 
 ## MQTT 协议实现方式
 
-![img](figures/14523188625918865.png) 
+![img](figures/mqtt_principle.png) 
 
 - 实现MQTT协议需要：客户端和服务器端。
 - MQTT协议中有三种身份：发布者（Publish）、代理（Broker）（服务器）、订阅者（Subscribe）。其中，消息的发布者和订阅者都是客户端，消息代理是服务器，消息发布者可以同时是订阅者。
