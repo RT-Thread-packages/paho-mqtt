@@ -7,18 +7,23 @@
 
 ``` {.c}
 pahomqtt
-│   README.md                       // 软件包使用说明
-│   SConscript                      // RT-Thread 默认的构建脚本
 ├───docs 
+│   └───figures                     // 文档使用图片
 │   │   api.md                      // API 使用说明
 │   │   introduction.md             // 软件包详细介绍
-│   │   port.md                     // 移植说明文档
-│   └───user-guide.md               // 用户手册
+│   │   principle.md                // 实现原理
+│   │   README.md                   // 文档结构说明  
+│   │   samples.md                  // 软件包示例
+│   │   user-guide.md               // 使用指南
+│   └───version.md                  // 版本
 ├───MQTTClient-RT                   // 移植文件
 ├───MQTTPacket                      // 源文件
 ├───samples                         // 示例代码
 │   └───mqtt_sample.c               // 软件包应用示例代码
-└───tests                           // mqtt 功能测试程序
+├───tests                           // mqtt 功能测试程序
+│   LICENSE                         // 软件包许可证
+│   README.md                       // 软件包使用说明
+└───SConscript                      // RT-Thread 默认的构建脚本
 ```
 
 ## RT-Thread  软件包功能特点
