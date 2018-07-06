@@ -2,7 +2,7 @@
 
 ## 准备工作
 
-首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 paho-mqtt 软件包，进行配置，操作界面如下图所示：
+首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 paho-mqtt 软件包，操作界面如下图所示：
 
 ![1530238326775](figures/select_mqtt_package.png)
 
@@ -10,7 +10,7 @@
 
 ![1530693891054](figures/open_mqtt_example.png)
 
-配置项含义如下：
+配置项介绍如下：
 
 ````shell
  --- Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms  
@@ -26,7 +26,30 @@
 
 ## 使用流程
 
+软件包添加到工程后，编译下载后重新运行，可以在 msh 终端看到如下命令：
+
+```shell
+msh />
+RT-Thread shell commands:
+mq_start         - startup mqtt client      # 启动 MQTT 客户端
+mq_pub           - publish mqtt msg         # 向指定客户端推送消息
+```
+
 ## 运行效果
+
+演示示例可以展示连接服务器、订阅 Topic、向指定 Topic 推送消息的功能，如下所示：
+
+```shell
+msh />mq_start 
+inter mqtt_connect_callback!        
+ipv4 address port: 1883
+[MQTT] HOST =  'iot.eclipse.org'
+msh />[MQTT] Subscribe 
+inter mqtt_online_callback!   
+msh />mq_pub hello-rtthread       
+msh />mqtt sub callback: /mqtt/test hello-rtthread   
+```
+
 
 ## 测试介绍
 
