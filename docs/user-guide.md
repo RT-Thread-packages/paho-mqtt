@@ -1,27 +1,28 @@
 # MQTT 使用说明
 
-## 获取示例
-本节介绍获取 paho-mqtt 软件包后，首先需要在 BSP 目录下打开 env 配置界面，然后遵循如下配置流程。
-
-- 配置使能示例选项 `Enable MQTT example`
-- 配置使能测试例程 `Enable MQTT test`
-- 配置使能 TLS 安全传输选项 `Enable support tls protocol`
-- 设置 MQTT 能订阅的最大 topic 主题数量 `Max pahomqtt subscribe topic handlers`
-- 配置包版本选为最新版 `latest_version`
-
-![](figures/paho-mqtt-menuconfig.png)
-
 ## 准备工作
 
-首先我们需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，选中 paho-mqtt 软件包，进行配置。操作流程如下图所示：
+首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 paho-mqtt 软件包，进行配置，操作界面如下图所示：
 
 ![1530238326775](figures/select_mqtt_package.png)
 
-开启 MQTT 示例：
+开启功能示例，便于测试 MQTT 功能：
 
 ![1530693891054](figures/open_mqtt_example.png)
 
-接下来使用 pkgs--update 命令下载软件包并添加到工程中即可。
+配置项含义如下：
+
+````shell
+ --- Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms  
+     MQTT mode (Pipe mode: high performance and depends on DFS)  --->#高级功能   
+     [*]   Enable MQTT example              #开启 MQTT 功能示例     
+     [ ]   Enable MQTT test                 #开启 MQTT 测试例程    
+     [ ]   Enable support tls protocol      #开启 TLS 安全传输选项      
+     (1)   Max pahomqtt subscribe topic handlers  #设置 Topic 最大订阅数量 
+     [*]   Enable debug log output          #开启调试Log输出                      
+     version (latest)  --->                 #选择软件包版本，默认为最新版
+````
+选择合适的配置项后，使用 pkgs--update 命令下载软件包并添加到工程中即可。
 
 ## 使用流程
 
