@@ -13,7 +13,7 @@
 
 ## MQTT 软件包框架图
 
-在 RT-Thread 系统中，MQTT 软件包依赖于 Lwip 协议栈，基于 TCP 通信，结构图如下：
+在 RT-Thread 系统中，MQTT 软件包依赖于 Lwip 协议栈，基于 TCP/IP 通信，结构图如下：
 
 ![1530931499681](figures/mqtt_struct.png)
 

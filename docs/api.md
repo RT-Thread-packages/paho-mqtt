@@ -2,7 +2,7 @@
 
 ## 订阅列表
 
-paho-mqtt 中采用订阅列表的形式进行多个 Topic 的订阅，订阅列表存储在 `MQTTClient` 结构体实例中，在 MQTT 启动前配置，如下所示：
+Paho MQTT 中采用订阅列表的形式进行多个 Topic 的订阅，订阅列表存储在 `MQTTClient` 结构体实例中，在 MQTT 启动前配置，如下所示：
 
 ```.{c}
 ... // 省略代码
@@ -16,12 +16,10 @@ client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
 client.messageHandlers[0].callback = mqtt_sub_callback;
 client.messageHandlers[0].qos = QOS1;
 ```
-详细的代码参考 `samples/mqtt_sample.c` 中的 `mq_start` 函数。
-
-订阅列表的最大数量是由 `menuconfig` 中的 `Max pahomqtt subscribe topic handlers` 选项进行配置的。 
+详细的代码讲解请参考 Samples 章节，订阅列表的最大数量可以由 `menuconfig` 中的 `Max pahomqtt subscribe topic handlers` 选项进行配置。 
 
 ## callback
-paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相关事件的处理， 在 `MQTTClient` 结构体实例中注册使用。
+paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相关事件的处理，需要在 `MQTTClient` 结构体实例中注册使用。
 
 |callback 名称                           |描述|
 |:-----                                  |:----|
@@ -35,7 +33,7 @@ paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相
 
 ## MQTT_URI
 
-paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ipv6 地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户需要按照要求填写可用的 uri 即可。
+paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ipv6 地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户只需要按照要求填写可用的 uri 即可。
 
 示例 uri：
 ```.{c}

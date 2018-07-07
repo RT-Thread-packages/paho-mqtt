@@ -2,7 +2,7 @@
 
 ## 准备工作
 
-首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 paho-mqtt 软件包，操作界面如下图所示：
+首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 Paho MQTT 软件包，操作界面如下图所示：
 
 ![1530238326775](figures/select_mqtt_package.png)
 
@@ -22,7 +22,7 @@
      [*]   Enable debug log output          #开启调试Log输出                      
      version (latest)  --->                 #选择软件包版本，默认为最新版
 ````
-选择合适的配置项后，使用 pkgs--update 命令下载软件包并添加到工程中即可。
+选择合适的配置项后，使用 `pkgs --update` 命令下载软件包并添加到工程中即可。
 
 ## 使用流程
 
