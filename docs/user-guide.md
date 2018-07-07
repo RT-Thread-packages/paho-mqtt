@@ -52,8 +52,7 @@ msh />mqtt sub callback: /mqtt/test hello-rtthread
 
 ## 注意事项
 
-- 正确填写 `MQTT_USERNAME` 和 `MQTT_PASSWORD`  
-如果 `MQTT_USERNAME` 和 `MQTT_PASSWORD` 填写错误，MQTT 客户端无法正确连接到 MQTT 服务器。
+需要注意正确填写 `MQTT_USERNAME` 和 `MQTT_PASSWORD` ，如果 `MQTT_USERNAME` 和 `MQTT_PASSWORD` 填写错误，MQTT 客户端无法正确连接到 MQTT 服务器。
 
 ## 参考资料
 

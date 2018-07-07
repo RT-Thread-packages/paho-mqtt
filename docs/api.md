@@ -31,13 +31,13 @@ paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相
 |defaultMessageHandler                   |默认的订阅消息接收回调|
 |messageHandlers[x].callback             |订阅列表中对应的订阅消息接收回调|
 
-用户可以使用 `defaultMessageHandler` 回调默认处理接收到的订阅消息，也可以使用 `messageHandlers` 订阅列表，为 `messageHandlers` 数组中对应的每一个 topic 提供一个独立的订阅消息接收回调。
+用户可以使用 `defaultMessageHandler` 回调默认处理接收到的订阅消息，也可以使用 `messageHandlers` 订阅列表，为 `messageHandlers` 数组中对应的每一个 Topic 提供一个独立的订阅消息接收回调。
 
 ## MQTT_URI
 
-paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ipv6 地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户需要按照要求填写可用的 URI 即可。
+paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ipv6 地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户需要按照要求填写可用的 uri 即可。
 
-示例 URI：
+示例 uri：
 ```.{c}
 domain 类型
 tcp://iot.eclipse.org:1883
@@ -52,7 +52,7 @@ ssl://[fe80::20c:29ff:fe9a:a07e]:1884
 ```
 
 ## paho_mqtt_start 接口
-- 功能： 启动 MQTT 客户端。
+- 功能：启动 MQTT 客户端，根据配置项订阅相应的主题。
 
 - 函数原型：
 ```.{c}
@@ -66,7 +66,7 @@ int paho_mqtt_start(MQTTClient *client)
 |return                             |0 : 成功; 其他 : 失败|
 
 ## MQTT Publish 接口
-- 功能： 向指定的 topic 主题发布 MQTT 消息。
+- 功能：向指定的 Topic 主题发布 MQTT 消息。
 
 - 函数原型：
 ```.{c}
