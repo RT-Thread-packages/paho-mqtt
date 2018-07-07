@@ -2,7 +2,7 @@
 
 ## 示例代码讲解
 
-下面讲解 RT-Thread  提供的  MQTT 示例代码，测试服务器使用 Eclipse 的测试服务器，地址 `iot.eclipse.org` ，端口 `1883，`，MQTT 示例代码如下：
+下面讲解 RT-Thread 提供的  MQTT 示例代码，测试服务器使用 Eclipse 的测试服务器，地址 `iot.eclipse.org` ，端口 `1883`，MQTT 功能示例代码如下：
 
 ```c
 #include <stdlib.h>
@@ -190,9 +190,10 @@ MSH_CMD_EXPORT(mq_pub, publish mqtt msg);
 
 ## 运行示例
 在 msh 中运行上述功能示例代码，可以实现向服务器订阅主题和向特定主题推送消息的功能，
-功能示例运行效果如下：
+功能示例代码运行效果如下：
 
-启动 MQTT 客户端：
+- 启动 MQTT 客户端，连接代理服务器并订阅主题：
+
 ```shell
 msh />mq_start                      # 启动 MQTT 客户端连接 Eclipse 服务器
 inter mqtt_connect_callback!        # 服务器连接成功，调用连接回调函数打印服务器信息
@@ -202,7 +203,8 @@ msh />[MQTT] Subscribe #0 /mqtt/test  OK!  # 订阅主题 /mqtt/test 成功
 inter mqtt_online_callback!         # MQTT 上线成功，调用上线回调函数
 msh />
 ```
-发布消息：
+- 作为发布者向指定主题发布消息：
+
 ```shell
 msh />mq_pub hello-rtthread         # 向指定主题发送  hello-rtthread 消息
 msh />mqtt sub callback: /mqtt/test hello-rtthread   # 客户端收到服务器发回的订阅
