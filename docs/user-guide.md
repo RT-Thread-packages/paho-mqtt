@@ -115,15 +115,15 @@ MQTTPublish(&client, topic, &message);         //开始向指定 Topic 推送消
 
 演示示例可以展示连接服务器、订阅 Topic、向指定 Topic 推送消息的功能，如下所示：
 
-``` shell
-msh />mq_start                        # 启动 MQTT 客户端连接代理服务器
-inter mqtt_connect_callback!          # 连接成功，运行上线回调函数
+``` c
+msh />mq_start                        /* 启动 MQTT 客户端连接代理服务器 */
+inter mqtt_connect_callback!          /* 连接成功，运行上线回调函数 */
 ipv4 address port: 1883
 [MQTT] HOST =  'iot.eclipse.org'
 msh />[MQTT] Subscribe 
-inter mqtt_online_callback!           # 上线成功，运行在线回调函数
-msh />mq_pub hello-rtthread           # 向指定 Topic 推送消息
-msh />mqtt sub callback: /mqtt/test hello-rtthread # 收到Topic消息，执行订阅回调函数
+inter mqtt_online_callback!           /* 上线成功，运行在线回调函数 */
+msh />mq_pub hello-rtthread           /* 向指定 Topic 推送消息 */
+msh />mqtt sub callback: /mqtt/test hello-rtthread /* 收到消息，执行回调函数 */
 ```
 
 ## 注意事项
