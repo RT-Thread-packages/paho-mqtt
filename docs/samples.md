@@ -4,7 +4,7 @@
 
 下面讲解 RT-Thread 提供的  MQTT 示例代码，测试服务器使用 Eclipse 的测试服务器，地址 `iot.eclipse.org` ，端口 `1883`，MQTT 功能示例代码如下：
 
-```{.c}
+```c
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -194,7 +194,7 @@ MSH_CMD_EXPORT(mq_pub, publish mqtt msg);
 
 - 启动 MQTT 客户端，连接代理服务器并订阅主题：
 
-```{.c}
+```shell
 msh />mq_start                      # 启动 MQTT 客户端连接 Eclipse 服务器
 inter mqtt_connect_callback!        # 服务器连接成功，调用连接回调函数打印服务器信息
 ipv4 address port: 1883
@@ -205,7 +205,7 @@ msh />
 ```
 - 作为发布者向指定主题发布消息：
 
-```{.c}
+```shell
 msh />mq_pub hello-rtthread         # 向指定主题发送  hello-rtthread 消息
 msh />mqtt sub callback: /mqtt/test hello-rtthread   # 客户端收到服务器发回的订阅
                                                      # 主题的信息，执行订阅回调函数
