@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include <rtthread.h>
+#include <sys/time.h>
 
 #include "MQTTPacket.h"
 #include "paho_mqtt.h"

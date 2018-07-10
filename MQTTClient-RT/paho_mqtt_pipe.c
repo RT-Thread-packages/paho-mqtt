@@ -4,6 +4,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <dfs_posix.h>
+#include <sys/time.h>
 
 #include <netdb.h>
 #include <sys/socket.h>
