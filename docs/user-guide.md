@@ -13,14 +13,14 @@
 配置项介绍如下：
 
 ````{.c}
- --- Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms  
-     MQTT mode (Pipe mode: high performance and depends on DFS)  --->#高级功能   
-     [*]   Enable MQTT example              #开启 MQTT 功能示例     
-     [ ]   Enable MQTT test                 #开启 MQTT 测试例程    
-     [ ]   Enable support tls protocol      #开启 TLS 安全传输选项      
-     (1)   Max pahomqtt subscribe topic handlers  #设置 Topic 最大订阅数量 
-     [*]   Enable debug log output          #开启调试Log输出                      
-     version (latest)  --->                 #选择软件包版本，默认为最新版
+--- Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms  
+    MQTT mode (Pipe mode: high performance and depends on DFS)  --->#高级功能
+    [*]   Enable MQTT example              #开启 MQTT 功能示例     
+    [ ]   Enable MQTT test                 #开启 MQTT 测试例程    
+    [ ]   Enable support tls protocol      #开启 TLS 安全传输选项      
+    (1)   Max pahomqtt subscribe topic handlers  #设置 Topic 最大订阅数量 
+    [*]   Enable debug log output          #开启调试Log输出                 
+    version (latest)  --->                 #选择软件包版本，默认为最新版
 ````
 选择合适的配置项后，使用 `pkgs --update` 命令下载软件包并添加到工程中即可。
 
@@ -28,7 +28,7 @@
 这一节介绍 MQTT 软件包的配置参数和使用方法。
 
 ### 设置代理信息
-首先要设置好代理服务器的地址，用户名、密码等必要信息。以 MQTT sample 为例有如下的设置：
+首先要设置好代理服务器的地址，用户名、密码等必要信息。以 MQTT sample 为例有如下的设置：  
 ```{.c}
 #define MQTT_URI                "tcp://iot.eclipse.org:1883"   //设置服务器地址
 #define MQTT_USERNAME           "admin"                        //代理服务器用户名

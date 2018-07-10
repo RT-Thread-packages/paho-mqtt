@@ -1,7 +1,6 @@
 # MQTT 软件包介绍
 
-> [Paho MQTT](http://www.eclipse.org/paho/downloads.php) 是 Eclipse 实现的 MQTT 协议的客户端，本软件包是在 Eclipse [paho-mqtt](https://github.com/eclipse/paho.mqtt.embedded-c) 源码包的基础上设计的一套 MQTT 客户端程序。
-> 
+[Paho MQTT](http://www.eclipse.org/paho/downloads.php) 是 Eclipse 实现的 MQTT 协议的客户端，本软件包是在 Eclipse [paho-mqtt](https://github.com/eclipse/paho.mqtt.embedded-c) 源码包的基础上设计的一套 MQTT 客户端程序。
 
 ## 文件目录结构
 
@@ -24,29 +23,23 @@ pahomqtt
 │   LICENSE                         // 软件包许可证
 │   README.md                       // 软件包使用说明
 └───SConscript                      // RT-Thread 默认的构建脚本
-
 ```
 
 ## RT-Thread  软件包功能特点
 
 RT-Thread MQTT 客户端功能特点如下：
 
-- 断线自动重连
-
+- 断线自动重连  
     RT-Thread MQTT 软件包实现了断线重连机制，在断网或网络不稳定导致连接断开时，会维护登陆状态，重新连接，并自动重新订阅 Topic。提高连接的可靠性，增加了软件包的易用性。
 
-- pipe 模型，非阻塞 API
+- pipe 模型，非阻塞 API  
+    降低编程难度，提高代码运行效率，适用于高并发数据量小的情况。
 
-  降低编程难度，提高代码运行效率，适用于高并发数据量小的情况。
-
-- 事件回调机制
-
+- 事件回调机制  
     在建立连接、收到消息或者断开连接等事件时，可以执行自定义的回调函数。
 
-- TLS 加密传输
-
+- TLS 加密传输  
     MQTT 可以采用 TLS 加密方式传输，保证数据的安全性和完整性 。
-
 
 ## MQTT 简述
 
@@ -90,25 +83,25 @@ MQTT服务器以称为“消息代理”（Broker），可以是一个应用程�
 
 MQTT协议中定义了一些方法（也被称为动作）， 用来表示对确定资源所进行操作。 这个资源可以代表预先存在的数据或动态生成数据，这取决于服务器的实现。通常来说，资源指服务器上的文件或输出。
 
-- Connect，等待与服务器建立连接。
-- Disconnect，等待 MQTT 客户端完成所做的工作，并与服务器断开 TCP/IP 会话。
-- Subscribe，等待完成订阅。
-- UnSubscribe，等待服务器取消客户端的一个或多个 Topics 订阅。
-- Publish，MQTT 客户端发送消息请求，发送完成后返回应用程序线程。
+- Connect：等待与服务器建立连接。
+- Disconnect：等待 MQTT 客户端完成所做的工作，并与服务器断开 TCP/IP 会话。
+- Subscribe：等待完成订阅。
+- UnSubscribe：等待服务器取消客户端的一个或多个 Topics 订阅。
+- Publish：MQTT 客户端发送消息请求，发送完成后返回应用程序线程。
 
 ### MQTT 协议中的订阅、主题、会话
 
-- 订阅（Subscription）
+- 订阅（Subscription）  
   订阅包含主题筛选器（Topic Filter）和最大服务质量（QoS）。订阅会与一个会话（Session）关联。一个会话可以包含多个订阅。每一个会话中的每个订阅都有一个不同的主题筛选器。
-- 会话（Session）
+- 会话（Session）  
   每个客户端与服务器建立连接后就是一个会话，客户端和服务器之间有状态交互。会话存在于一个网络之间，也可能在客户端和服务器之间跨越多个连续的网络连接。
-- 主题名（Topic Name）
+- 主题名（Topic Name）  
   连接到一个应用程序消息的标签，该标签与服务器的订阅相匹配。服务器会将消息发送给订阅所匹配标签的每个客户端。
-- 主题筛选器（Topic Filter）
+- 主题筛选器（Topic Filter）  
   一个对主题名通配符筛选器，在订阅表达式中使用，表示订阅所匹配到的多个主题。
-- 负载（Payload）
+- 负载（Payload）  
   消息订阅者所具体接收的内容。
-- 应用消息 Application Message
+- 应用消息 Application Message  
   MQTT协议通过网络传输应用数据。应用消息通过MQTT传输时，它们有关联的服务质量（QoS）和主题（Topic）。
-- 控制报文 MQTT Control Packet
+- 控制报文 MQTT Control Packet  
   通过网络连接发送的信息数据包。MQTT规范定义了十四种不同类型的控制报文，其中一个（PUBLISH报文）用于传输应用消息。
