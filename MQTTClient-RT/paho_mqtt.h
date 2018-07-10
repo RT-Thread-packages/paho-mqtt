@@ -25,7 +25,7 @@
 #define MQTT_TLS_READ_BUFFER    4096
 #endif
 
-enum __attribute__ ((aligned (4))) QoS { QOS0, QOS1, QOS2 };
+enum QoS { QOS0, QOS1, QOS2 } ALIGN(4);
 
 /* all failure return codes must be negative */
 enum returnCode { PAHO_BUFFER_OVERFLOW = -2, PAHO_FAILURE = -1, PAHO_SUCCESS = 0 };
