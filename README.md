@@ -16,11 +16,14 @@ RT-Thread MQTT 客户端功能特点：
   RT-Thread online packages --->
       IOT internet of things --->
           [*] Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms
-          [*]     Enable MQTT example
-          [ ]     Enable MQTT test
-          [ ]     Enable support tls protocol
-          (1)     Max pahomqtt subscribe topic handlers
-                  pahomqtt version (latest_version)
+                MQTT mode (Pipe mode: high performance and depends on DFS)  --->
+          [*]   Enable MQTT example
+          [ ]   Enable MQTT test
+          [ ]   Enable support tls protocol
+          (4096) Set MQTT thread stack size
+          (1)   Max pahomqtt subscribe topic handlers
+          [*]   Enable debug log output
+                version (latest)  --->
 ```
 
 ## 3、示例介绍
@@ -31,8 +34,6 @@ RT-Thread MQTT 客户端功能特点：
 - 配置使能 TLS 安全传输选项 `Enable support tls protocol`
 - 设置 MQTT 能订阅的最大 topic 主题数量 `Max pahomqtt subscribe topic handlers`
 - 配置包版本选为最新版 `latest_version`
-
-![](./doc/figures/paho-mqtt-menuconfig.png)
 
 ### 3.2 运行示例
 `samples/mqtt_sample.c` 例程提供了一个基础的 MQTT 发布订阅演示，在 RT-Thread MSH 中运行 MQTT 示例，需要开启 MSH 的支持。
@@ -212,6 +213,8 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 
 - 正确填写 `MQTT_USERNAME` 和 `MQTT_PASSWORD`  
 如果 `MQTT_USERNAME` 和 `MQTT_PASSWORD` 填写错误，MQTT 客户端无法正确连接到 MQTT 服务器。
+- 合理配置 MQTT 线程栈  
+如果使用 MQTT TLS 加密连接，MQTT 线程栈至少需要 6144 字节。
 
 ## 7、参考资料
 

@@ -858,7 +858,7 @@ int paho_mqtt_start(MQTTClient *client)
 {
     rt_err_t result;
     rt_thread_t tid;
-    int stack_size = 1024 * 4;
+    int stack_size = RT_PKG_MQTT_THREAD_STACK_SIZE;
     int priority = RT_THREAD_PRIORITY_MAX / 3;
     char *stack;
 
