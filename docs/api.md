@@ -4,7 +4,7 @@
 
 Paho MQTT 中采用订阅列表的形式进行多个 Topic 的订阅，订阅列表存储在 `MQTTClient` 结构体实例中，在 MQTT 启动前配置，如下所示：
 
-```.{c}
+```c
 ... // 省略代码
 
 MQTTClient client;
@@ -35,25 +35,27 @@ paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相
 
 paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ipv6 地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户只需要按照要求填写可用的 uri 即可。
 
-示例 uri：
-```.{c}
-domain 类型
-tcp://iot.eclipse.org:1883
+- 示例 uri：
 
-ipv4 类型
-tcp://192.168.10.1:1883
-ssl://192.168.10.1:1884
+```
+    domain 类型
+    tcp://iot.eclipse.org:1883
 
-ipv6 类型
-tcp://[fe80::20c:29ff:fe9a:a07e]:1883
-ssl://[fe80::20c:29ff:fe9a:a07e]:1884
+    ipv4 类型
+    tcp://192.168.10.1:1883
+    ssl://192.168.10.1:1884
+
+    ipv6 类型
+    tcp://[fe80::20c:29ff:fe9a:a07e]:1883
+    ssl://[fe80::20c:29ff:fe9a:a07e]:1884
 ```
 
 ## paho_mqtt_start 接口
 - 功能：启动 MQTT 客户端，根据配置项订阅相应的主题。
 
 - 函数原型：
-```.{c}
+
+```c
 int paho_mqtt_start(MQTTClient *client)
 ```
 - 函数参数：
@@ -67,9 +69,11 @@ int paho_mqtt_start(MQTTClient *client)
 - 功能：向指定的 Topic 主题发布 MQTT 消息。
 
 - 函数原型：
-```.{c}
+
+```c
 int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 ```
+
 - 函数参数：
 
 |参数                               |描述|
