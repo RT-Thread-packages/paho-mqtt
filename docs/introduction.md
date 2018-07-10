@@ -19,11 +19,12 @@ pahomqtt
 ├───MQTTClient-RT                   // 移植文件
 ├───MQTTPacket                      // 源文件
 ├───samples                         // 示例代码
-│   └───mqtt_sample.c               // 软件包应用示例代码
+│       mqtt_sample.c               // 软件包应用示例代码
 ├───tests                           // mqtt 功能测试程序
 │   LICENSE                         // 软件包许可证
 │   README.md                       // 软件包使用说明
 └───SConscript                      // RT-Thread 默认的构建脚本
+
 ```
 
 ## RT-Thread  软件包功能特点
