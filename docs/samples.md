@@ -194,21 +194,20 @@ MSH_CMD_EXPORT(mq_pub, publish mqtt msg);
 
 - 启动 MQTT 客户端，连接代理服务器并订阅主题：
 
-```shell
-msh />mq_start                      # 启动 MQTT 客户端连接 Eclipse 服务器
-inter mqtt_connect_callback!        # 服务器连接成功，调用连接回调函数打印服务器信息
+```c
+msh />mq_start                # 启动 MQTT 客户端连接 Eclipse 服务器
+inter mqtt_connect_callback!  # 服务器连接成功，调用连接回调函数打印服务器信息
 ipv4 address port: 1883
 [MQTT] HOST =  'iot.eclipse.org'
 msh />[MQTT] Subscribe #0 /mqtt/test  OK!  # 订阅主题 /mqtt/test 成功
-inter mqtt_online_callback!         # MQTT 上线成功，调用上线回调函数
+inter mqtt_online_callback!   # MQTT 上线成功，调用上线回调函数
 msh />
 ```
 - 作为发布者向指定主题发布消息：
 
-```shell
-msh />mq_pub hello-rtthread         # 向指定主题发送  hello-rtthread 消息
+```c
+msh />mq_pub hello-rtthread   # 向指定主题发送  hello-rtthread 消息
 msh />mqtt sub callback: /mqtt/test hello-rtthread   # 客户端收到服务器发回的订阅
-                                                     # 主题的信息，执行订阅回调函数
-                                                     # 打印出收到的内容
+# 主题的信息，执行订阅回调函数打印出收到的内容
 msh />
 ```
