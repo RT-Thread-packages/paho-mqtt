@@ -4,15 +4,15 @@
 
 首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 Paho MQTT 软件包，操作界面如下图所示：
 
-![1530238326775](figures/select_mqtt_package.png)
+![选中 Paho MQTT 软件包](figures/select_mqtt_package.png)
 
 开启功能示例，便于测试 MQTT 功能：
 
-![1530693891054](figures/open_mqtt_example.png)
+![开启 MQTT 软件包测试例程](figures/open_mqtt_example.png)
 
 配置项介绍如下：
 
-````shell
+````{.c}
  --- Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms  
      MQTT mode (Pipe mode: high performance and depends on DFS)  --->#高级功能   
      [*]   Enable MQTT example              #开启 MQTT 功能示例     
@@ -29,7 +29,7 @@
 
 ### 设置代理信息
 首先要设置好代理服务器的地址，用户名、密码等必要信息。以 MQTT sample 为例有如下的设置：
-```c
+```{.c}
 #define MQTT_URI                "tcp://iot.eclipse.org:1883"   //设置服务器地址
 #define MQTT_USERNAME           "admin"                        //代理服务器用户名
 #define MQTT_PASSWORD           "admin"                        //代理服务器密码
@@ -44,7 +44,7 @@
 
 - 设置服务器地址，以及服务器账号密码等信息，示例代码如下：
 
-```c
+``` {.c}
 /* 配置连接参数 */
 memcpy(&client.condata, &condata, sizeof(condata));
 client.condata.clientID.cstring = cid;
@@ -55,7 +55,7 @@ client.condata.password.cstring = MQTT_PASSWORD;            //设置密码
 ```
 
 - 设置消息等级、推送 Topic、以及断开通知消息等配置，示例如下：
-```c
+``` {.c}
 /* 配置断开通知消息 */
 client.condata.willFlag = 1;
 client.condata.will.qos = 1;
@@ -66,7 +66,7 @@ client.condata.will.message.cstring = MQTT_WILLMSG;        //设置断开通知�
 
 - 设置事件回调函数，这里需要为事件设置回掉函数，如连接成功事件、上线成功事件、下线事件等，示例代码如下：
 
-```c
+``` {.c}
 /* 设置事件回调函数，回调函数需要自己编写，在例程中为回调函数留了空函数 */
 client.connect_callback = mqtt_connect_callback;       //设置连接回调函数
 client.online_callback = mqtt_online_callback;         //设置上线回调函数
@@ -74,7 +74,7 @@ client.offline_callback = mqtt_offline_callback;       //设置下线回调函�
 ```
 - 设置客户端订阅表，MQTT 客户端可以同时订阅多个 Topic， 所以需要维护一个订阅表，在这一步需要为每一个 Topic 的订阅设置参数，主要包括 Topic 名称、该订阅的回调函数以及消息等级，代码示例如下：
 
-```c
+``` {.c}
 /* 配置订阅表 */
 client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC; //设置第一个订阅的 Topic
 client.messageHandlers[0].callback = mqtt_sub_callback;//设置该订阅的回调函数
@@ -87,7 +87,7 @@ client.defaultMessageHandler = mqtt_sub_default_callback; //设置一个默认�
 
 配置完成 MQTT 客户端实例后，需要启动客户端，代码示例如下：
 
-```c
+``` {.c}
 /* 运行 MQTT 客户端 */
 paho_mqtt_start(&client);
 ```
@@ -96,7 +96,7 @@ paho_mqtt_start(&client);
 
 ### 向指定 Topic 推送消息
 连接服务器成功之后，便可以通过代理服务器向指定的 Topic 推送消息。推送消息时需要设置消息内容、Topic、消息等级等配置，示例代码如下：
-```c
+``` {.c}
 MQTTMessage message;
 const char *msg_str = send_str;
 const char *topic = MQTT_PUBTOPIC;             //设置指定 Topic
@@ -111,14 +111,14 @@ MQTTPublish(&client, topic, &message);         //开始向指定 Topic 推送消
 
 演示示例可以展示连接服务器、订阅 Topic、向指定 Topic 推送消息的功能，如下所示：
 
-```shell
-msh />mq_start                                   # 启动 MQTT 客户端连接代理服务器
-inter mqtt_connect_callback!                     # 连接成功，运行上线回调函数
+``` {.c}
+msh />mq_start                        # 启动 MQTT 客户端连接代理服务器
+inter mqtt_connect_callback!          # 连接成功，运行上线回调函数
 ipv4 address port: 1883
 [MQTT] HOST =  'iot.eclipse.org'
 msh />[MQTT] Subscribe 
-inter mqtt_online_callback!                      # 上线成功，运行在线回调函数
-msh />mq_pub hello-rtthread                      # 向指定 Topic 推送消息
+inter mqtt_online_callback!           # 上线成功，运行在线回调函数
+msh />mq_pub hello-rtthread           # 向指定 Topic 推送消息
 msh />mqtt sub callback: /mqtt/test hello-rtthread # 收到Topic消息，执行订阅回调函数
 ```
 
