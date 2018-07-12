@@ -23,6 +23,20 @@
 #error "must enable RT_LWIP_NETIF_LOOPBACK for publish!"
 #endif /* LWIP_NETIF_LOOPBACK */
 
+#ifndef RT_PKG_MQTT_THREAD_STACK_SIZE
+#ifdef MQTT_USING_TLS
+#define RT_PKG_MQTT_THREAD_STACK_SIZE 6144
+#else
+#define RT_PKG_MQTT_THREAD_STACK_SIZE 4096
+#endif
+#endif
+
+#ifdef MQTT_USING_TLS
+#if (RT_PKG_MQTT_THREAD_STACK_SIZE < 6144)
+#error "MQTT using tls, please increase MQTT thread stack size up to 6K via menuconfig tool!"
+#endif
+#endif
+
 static uint16_t pub_port = 7000;
 
 /*
