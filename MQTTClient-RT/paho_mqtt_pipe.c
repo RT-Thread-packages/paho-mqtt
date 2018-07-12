@@ -27,6 +27,20 @@
 #error "Please update the 'rtdbg.h' file to GitHub latest version (https://github.com/RT-Thread/rt-thread/blob/master/include/rtdbg.h)"
 #endif
 
+#ifndef RT_PKG_MQTT_THREAD_STACK_SIZE
+#ifdef MQTT_USING_TLS
+#define RT_PKG_MQTT_THREAD_STACK_SIZE 6144
+#else
+#define RT_PKG_MQTT_THREAD_STACK_SIZE 4096
+#endif
+#endif
+
+#ifdef MQTT_USING_TLS
+#if (RT_PKG_MQTT_THREAD_STACK_SIZE < 6144)
+#error "MQTT using tls, please increase MQTT thread stack size up to 6K via menuconfig tool!"
+#endif
+#endif
+
 /*
  * resolve server address
  * @param server the server sockaddress
