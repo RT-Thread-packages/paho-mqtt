@@ -1,6 +1,8 @@
 # paho-mqtt
 ## 1、介绍
-[Paho MQTT](http://www.eclipse.org/paho/downloads.php) 是 Eclipse 实现的 MQTT 协议的客户端，本软件包是在 Eclipse [paho-mqtt](https://github.com/eclipse/paho.mqtt.embedded-c) 源码包的基础上设计的一套 MQTT 客户端程序。
+- [Paho MQTT](http://www.eclipse.org/paho/downloads.php) 是 Eclipse 实现的基于 MQTT 协议的客户端，本软件包是在 Eclipse [paho-mqtt](https://github.com/eclipse/paho.mqtt.embedded-c) 源码包的基础上设计的一套 MQTT 客户端程序。
+
+- `paho-mqtt` 软件包功能特点以及 MQTT  协议介绍请参考 [软件包详细介绍](docs/introduction.md)。
 
 ### 1.1 目录结构
 
@@ -45,17 +47,20 @@ pahomqtt
 
 ## 3、使用 paho-mqtt
 
-* 了解软件包如何从零开始使用请参考 [用户手册](docs/user-guide.md)。
-* 查看软件包完整 API 请参考 [API 手册](docs/api.md)。
-* 参考软件包使用示例代码请参考 [示例程序](docs/samples.md) 。
+* 如何从零开始使用，请参考 [用户手册](docs/user-guide.md)。
+* 完整的 API 文档，请参考 [API 手册](docs/api.md)。
+* 详细的示例介绍，请参考 [示例文档](docs/samples.md) 。
+* MQTT 协议工作原理，请参考 [工作原理](docs/principle.md) 。
 * 更多**详细介绍文档**位于 [`/docs`](/docs) 文件夹下，**使用软件包进行开发前请务必查看**。
 
 ## 4、注意事项
 
 - 正确填写代理服务器的账号密码
+
     如果账号密码填写错误，MQTT 客户端将无法正确连接到 MQTT 服务器。
 
 - 合理配置 MQTT 线程栈
+
     如果使用 MQTT TLS 加密连接，MQTT 线程栈至少需要 6144 字节。
 
 ## 5、联系方式 & 感谢
