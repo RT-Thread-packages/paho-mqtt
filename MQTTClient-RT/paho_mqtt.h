@@ -5,7 +5,7 @@
 
 #include <MQTTPacket.h>
 
-#include <rtconfig.h>
+#include <rtthread.h>
 
 #ifdef MQTT_USING_TLS
 #include <tls_client.h>
