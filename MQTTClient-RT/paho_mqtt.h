@@ -76,12 +76,12 @@ struct MQTTClient
     void (*defaultMessageHandler)(MQTTClient *, MessageData *);
 
     /* publish interface */
-#if defined(RT_USING_POSIX) && defined(RT_USING_DFS_NET)
+#if defined(RT_USING_POSIX) && (defined(RT_USING_DFS_NET) || defined(SAL_USING_POSIX))
     int pub_pipe[2];
 #else
     int pub_sock;
     int pub_port;
-#endif /* RT_USING_POSIX && RT_USING_DFS_NET */
+#endif /* RT_USING_POSIX && (RT_USING_DFS_NET || SAL_USING_POSIX) */
 
 #ifdef MQTT_USING_TLS
     /* mbedtls session struct*/
