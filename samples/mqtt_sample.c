@@ -93,6 +93,7 @@ static void mq_start(void)
     }
     /* config MQTT context param */
     {
+        client.isconnected = 0;
         client.uri = MQTT_URI;
 
         /* generate the random client ID */

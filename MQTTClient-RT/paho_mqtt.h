@@ -68,7 +68,7 @@ struct MQTTClient
 
     struct MessageHandlers
     {
-        const char *topicFilter;
+        char *topicFilter;
         void (*callback)(MQTTClient *, MessageData *);
         enum QoS qos;
     } messageHandlers[MAX_MESSAGE_HANDLERS]; /* Message handlers are indexed by subscription topic */
