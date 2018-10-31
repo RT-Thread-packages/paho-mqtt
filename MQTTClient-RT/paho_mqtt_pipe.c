@@ -591,13 +591,14 @@ static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
 {
     int rc = PAHO_FAILURE;
     int len = 0;
+    int qos_sub = qos;
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)topicFilter;
 
     if (!c->isconnected)
         goto _exit;
 
-    len = MQTTSerialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, (int *)&qos);
+    len = MQTTSerialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, &qos_sub);
     if (len <= 0)
         goto _exit;
     if ((rc = sendPacket(c, len)) != PAHO_SUCCESS) // send the subscribe packet
