@@ -201,7 +201,7 @@ static void thread_pub(void *parameter)
     pub_data = rt_malloc(TEST_DATA_SIZE * sizeof(char));
     if (!pub_data)
     {
-        rt_kprintf("no memmory for pub_data\n");
+        rt_kprintf("no memory for pub_data\n");
         return;
     }
     rt_memset(pub_data, '*', TEST_DATA_SIZE * sizeof(char));
@@ -233,7 +233,7 @@ void mqtt_test_start(void)
 
     while (!client.isconnected)
     {
-        rt_kprintf("Waiting mqtt is connected!\n");
+        rt_kprintf("Waiting for mqtt connection...\n");
         rt_thread_delay(1000);
     }
 
