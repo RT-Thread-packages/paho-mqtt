@@ -1000,7 +1000,7 @@ int paho_mqtt_start(MQTTClient *client)
     static int is_started = 0;
     if (is_started)
     {
-        LOG_D("paho mqtt has already started!");
+        LOG_W("paho mqtt has already started!");
         return 0;
     }    
 
