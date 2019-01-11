@@ -40,16 +40,16 @@ paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ip
 - uri 示例：
 
 ```
-    domain 类型
-    tcp://iot.eclipse.org:1883
+domain 类型
+tcp://iot.eclipse.org:1883
 
-    ipv4 类型
-    tcp://192.168.10.1:1883
-    ssl://192.168.10.1:1884
+ipv4 类型
+tcp://192.168.10.1:1883
+ssl://192.168.10.1:1884
 
-    ipv6 类型
-    tcp://[fe80::20c:29ff:fe9a:a07e]:1883
-    ssl://[fe80::20c:29ff:fe9a:a07e]:1884
+ipv6 类型
+tcp://[fe80::20c:29ff:fe9a:a07e]:1883
+ssl://[fe80::20c:29ff:fe9a:a07e]:1884
 ```
 
 ## paho_mqtt_start 接口
