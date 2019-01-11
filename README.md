@@ -39,7 +39,7 @@ pahomqtt
 
 ## 2、获取软件包
 
-使用 `paho-mqtt` 软件包需要在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 Paho MQTT 软件包，操作界面如下图所示：
+使用 `paho-mqtt` 软件包需要在 BSP 目录下使用 menuconfig 命令打开 Env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 Paho MQTT 软件包，操作界面如下图所示：
 
 ![选中 Paho MQTT 软件包](docs/figures/select_mqtt_package.png)
 

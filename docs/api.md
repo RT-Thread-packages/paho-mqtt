@@ -16,9 +16,11 @@ client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
 client.messageHandlers[0].callback = mqtt_sub_callback;
 client.messageHandlers[0].qos = QOS1;
 ```
+
 详细的代码讲解请参考 Samples 章节，订阅列表的最大数量可以由 `menuconfig` 中的 `Max pahomqtt subscribe topic handlers` 选项进行配置。 
 
 ## callback
+
 paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相关事件的处理，需要在 `MQTTClient` 结构体实例中注册使用。
 
 |callback 名称                           |描述|
@@ -35,7 +37,7 @@ paho-mqtt 使用 callback 的方式向用户提供 MQTT 的工作状态以及相
 
 paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ipv6 地址，可解析 `tcp://` 和 `ssl://` 类型的 URI，用户只需要按照要求填写可用的 uri 即可。
 
-- 示例 uri：
+- uri 示例：
 
 ```
     domain 类型
@@ -51,32 +53,27 @@ paho-mqtt 中提供了 uri 解析功能，可以解析域名地址、ipv4 和 ip
 ```
 
 ## paho_mqtt_start 接口
-- 功能：启动 MQTT 客户端，根据配置项订阅相应的主题。
-
-- 函数原型：
 
 ```c
 int paho_mqtt_start(MQTTClient *client)
 ```
-- 函数参数：
 
-|参数                               |描述|
+|**参数**                           |**描述**|
 |:-----                             |:----|
 |client                             |MQTT 客户端实例对象|
 |return                             |0 : 成功; 其他 : 失败|
 
-## MQTT Publish 接口
-- 功能：向指定的 Topic 主题发布 MQTT 消息。
+该函数启动 MQTT 客户端，根据配置项订阅相应的主题。
 
-- 函数原型：
+## MQTT Publish 接口
+
+- 功能：向指定的 Topic 主题发布 MQTT 消息。
 
 ```c
 int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 ```
 
-- 函数参数：
-
-|参数                               |描述|
+|**参数**                            |**描述**|
 |:-----                             |:----|
 |c                                  |MQTT 客户端实例对象|
 |topicName                          |MQTT 消息发布主题|

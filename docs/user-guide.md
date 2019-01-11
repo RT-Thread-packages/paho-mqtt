@@ -2,7 +2,7 @@
 
 ## 准备工作
 
-首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 Paho MQTT 软件包，操作界面如下图所示：
+首先需要下载 MQTT 软件包，并将软件包加入到项目中。在 BSP 目录下使用 menuconfig 命令打开 Env 配置界面，在 `RT-Thread online packages → IoT - internet of things`  中选择 Paho MQTT 软件包，操作界面如下图所示：
 
 ![选中 Paho MQTT 软件包](figures/select_mqtt_package.png)
 
@@ -12,7 +12,7 @@
 
 配置项介绍如下：
 
-```shell
+```c
 --- Paho MQTT: Eclipse Paho MQTT C/C++ client for Embedded platforms  
     MQTT mode (Pipe mode: high performance and depends on DFS)  --->#高级功能
     [*]   Enable MQTT example              #开启 MQTT 功能示例     
@@ -25,9 +25,11 @@
 选择合适的配置项后，使用 `pkgs --update` 命令下载软件包并添加到工程中即可。
 
 ## 使用流程
+
 这一节介绍 MQTT 软件包的配置参数和使用方法。
 
 ### 设置代理信息
+
 首先要设置好代理服务器的地址，用户名、密码等必要信息。以 MQTT sample 为例有如下的设置：
 
 ```c
@@ -98,6 +100,7 @@ paho_mqtt_start(&client);
 启动 MQTT 客户端之后，客户端会自动连接代理服务器，自动订阅已经设置的 Topic，根据事件执行回调函数进行数据的处理。
 
 ### 向指定 Topic 推送消息
+
 连接服务器成功之后，便可以通过代理服务器向指定的 Topic 推送消息。推送消息时需要设置消息内容、Topic、消息等级等配置，示例代码如下：
 
 ``` c
@@ -126,9 +129,8 @@ msh />mq_pub hello-rtthread           /* 向指定 Topic 推送消息 */
 msh />mqtt sub callback: /mqtt/test hello-rtthread /* 收到消息，执行回调函数 */
 ```
 
-## 注意事项
-
-需要注意正确填写 `MQTT_USERNAME` 和 `MQTT_PASSWORD` ，如果 `MQTT_USERNAME` 和 `MQTT_PASSWORD` 填写错误，MQTT 客户端无法正确连接到 MQTT 服务器。
+!!! note "注意事项"
+      需要注意正确填写 `MQTT_USERNAME` 和 `MQTT_PASSWORD` ，如果 `MQTT_USERNAME` 和 `MQTT_PASSWORD` 填写错误，MQTT 客户端无法正确连接到 MQTT 服务器。
 
 ## 参考资料
 
