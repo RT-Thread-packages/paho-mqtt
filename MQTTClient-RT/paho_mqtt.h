@@ -11,6 +11,9 @@
 #include <tls_client.h>
 #endif
 
+#define MQTT_SW_VERSION         "1.1.0"
+#define MQTT_SW_VERSION_NUM     0x10100
+
 #ifndef PKG_PAHOMQTT_SUBSCRIBE_HANDLERS
 #define MAX_MESSAGE_HANDLERS    1 /* redefinable - how many subscriptions do you want? */
 #else
@@ -115,6 +118,16 @@ typedef void (*subscribe_cb)(MQTTClient *client, MessageData *data);
  */
 int paho_mqtt_start(MQTTClient *client);
 
+/**
+ * This function publish message to specified mqtt topic.
+ * @note it will be discarded, recommend to use "paho_mqtt_publish"
+ *
+ * @param c the pointer of MQTT context structure
+ * @param topicFilter topic filter name
+ * @param message the pointer of MQTTMessage structure
+ *
+ * @return the error code, 0 on subscribe successfully.
+ */
 int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message);
 
 #ifdef PAHOMQTT_PIPE_MODE
@@ -152,21 +165,21 @@ int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic);
 
 /**
  * This function publish message to specified mqtt topic.
- * NOTE: Recommended to use `paho_mqtt_publish`.
  *
  * @param c the pointer of MQTT context structure
- * @param topicFilter topic filter name
- * @param message the pointer of send message
+ * @param qos MQTT QOS type, only support QOS1
+ * @param topic topic filter name
+ * @param msg_str the pointer of send message
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int paho_mqtt_publish(MQTTClient *client, const char *topic, const char *msg_str);
+int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const char *msg_str);
 
 /**
  * This function control MQTT client configure, such as connect timeout, reconnect interval.
  *
  * @param c the pointer of MQTT context structure
- * @param cmd control configure type
+ * @param cmd control configure type, 'mqttControl' enumeration shows the supported configure types.
  * @param arg the pointer of argument
  *
  * @return the error code, 0 on subscribe successfully.

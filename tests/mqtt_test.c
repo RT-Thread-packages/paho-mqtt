@@ -184,7 +184,7 @@ static void thread_pub(void *parameter)
 
     while (1)
     {
-        if (!paho_mqtt_publish(&client, MQTT_PUBTOPIC, pub_data))
+        if (!paho_mqtt_publish(&client, QOS1, MQTT_PUBTOPIC, pub_data))
         {
             ++ pub_count;
         }

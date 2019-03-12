@@ -55,7 +55,7 @@ ssl://[fe80::20c:29ff:fe9a:a07e]:1884
 ## paho_mqtt_start 
 
 ```c
-int paho_mqtt_start(MQTTClient *client)；
+int paho_mqtt_start(MQTTClient *client);
 ```
 
 |**参数**                           |**描述**|
@@ -68,7 +68,7 @@ int paho_mqtt_start(MQTTClient *client)；
 ## paho_mqtt_stop 
 
 ```c
-int paho_mqtt_stop(MQTTClient *client)；
+int paho_mqtt_stop(MQTTClient *client);
 ```
 
 | **参数** | **描述**              |
@@ -84,13 +84,13 @@ int paho_mqtt_stop(MQTTClient *client)；
 int paho_mqtt_subscribe(MQTTClient *client, enum QoS qos, const char *topic, subscribe_cb callback);
 ```
 
-| **参数** | **描述**                              |
-| :------- | :------------------------------------ |
-| client   | MQTT 客户端实例对象                   |
-| qos      | 订阅的 QOS 级别，目前只支持 QOS1      |
-| topic    | 需要订阅的 topic                      |
-| callback | 订阅的 topic 获取数据时执行的回调函数 |
-| return   | 0 : 成功; 其他 : 失败                 |
+| **参数** | **描述**                         |
+| :------- | :------------------------------- |
+| client   | MQTT 客户端实例对象              |
+| qos      | 订阅的 QOS 级别，目前只支持 QOS1 |
+| topic    | 需要订阅的主题                   |
+| callback | 订阅主题获取数据时执行的回调函数 |
+| return   | 0 : 成功; 其他 : 失败            |
 
 该函数用于客户端订阅新的 Topic，并且注册数据获取回调函数。
 
@@ -103,7 +103,7 @@ int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic);
 | **参数** | **描述**              |
 | :------- | :-------------------- |
 | client   | MQTT 客户端实例对象   |
-| topic    | 需要取消订阅的 topic  |
+| topic    | 需要取消订阅的主题    |
 | return   | 0 : 成功; 其他 : 失败 |
 
 该函数用于客户端取消指定 Topic 的订阅。
@@ -111,15 +111,16 @@ int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic);
 ## paho_mqtt_publish 
 
 ```c
-int paho_mqtt_publish(MQTTClient *client, const char *topic, const char *msg_str);
+int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const char *msg_str);
 ```
 
-| **参数** | **描述**              |
-| :------- | :-------------------- |
-| client   | MQTT 客户端实例对象   |
-| topic    | 发送数据的 topic      |
-| msg_str  | 需要发送的数据指针    |
-| return   | 0 : 成功; 其他 : 失败 |
+| **参数** | **描述**                         |
+| :------- | :------------------------------- |
+| client   | MQTT 客户端实例对象              |
+| qos      | 发送的 QOS 级别，目前只支持 QOS1 |
+| topic    | 数据发送的主题                   |
+| msg_str  | 需要发送的数据指针               |
+| return   | 0 : 成功; 其他 : 失败            |
 
 该函数用于客户端向指定订阅的 Topic 发送数据。
 

@@ -105,7 +105,7 @@ paho_mqtt_start(&client);
 
 ``` c
 // 向指定 Topic 发送消息信息
-int paho_mqtt_publish(MQTTClient *client, const char *topic, const char *msg_str);
+int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const char *msg_str);
 ```
 
 ## 运行效果

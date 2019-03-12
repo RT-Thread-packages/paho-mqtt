@@ -12,7 +12,7 @@
 #include <rtthread.h>
 
 #define DBG_ENABLE
-#define DBG_SECTION_NAME    "MQTT"
+#define DBG_SECTION_NAME    "mqtt.sample"
 #define DBG_LEVEL           DBG_LOG
 #define DBG_COLOR
 #include <rtdbg.h>
@@ -47,7 +47,7 @@ static int is_started = 0;
 static void mqtt_sub_callback(MQTTClient *c, MessageData *msg_data)
 {
     *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt sub callback: %.*s %.*s\n",
+    LOG_D("mqtt sub callback: %.*s %.*s",
                msg_data->topicName->lenstring.len,
                msg_data->topicName->lenstring.data,
                msg_data->message->payloadlen,
@@ -58,7 +58,7 @@ static void mqtt_sub_callback(MQTTClient *c, MessageData *msg_data)
 static void mqtt_sub_default_callback(MQTTClient *c, MessageData *msg_data)
 {
     *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt sub default callback: %.*s %.*s\n",
+    LOG_D("mqtt sub default callback: %.*s %.*s",
                msg_data->topicName->lenstring.len,
                msg_data->topicName->lenstring.data,
                msg_data->message->payloadlen,
@@ -68,19 +68,19 @@ static void mqtt_sub_default_callback(MQTTClient *c, MessageData *msg_data)
 /* MQTT 连接事件回调函数 */
 static void mqtt_connect_callback(MQTTClient *c)
 {
-    rt_kprintf("inter mqtt_connect_callback!\n");
+    LOG_D("inter mqtt_connect_callback!");
 }
 
 /* MQTT 上线事件回调函数 */
 static void mqtt_online_callback(MQTTClient *c)
 {
-    rt_kprintf("inter mqtt_online_callback!\n");
+    LOG_D("inter mqtt_online_callback!");
 }
 
 /* MQTT 下线事件回调函数 */
 static void mqtt_offline_callback(MQTTClient *c)
 {
-    rt_kprintf("inter mqtt_offline_callback!\n");
+    LOG_D("inter mqtt_offline_callback!");
 }
 
 static int mqtt_start(int argc, char **argv)
@@ -97,7 +97,7 @@ static int mqtt_start(int argc, char **argv)
 
     if (is_started)
     {
-        rt_kprintf("mqtt client is already connected.\n");
+        LOG_E("mqtt client is already connected.");
         return -1;
     }
      /* 配置 MQTT 结构体内容参数 */
@@ -128,7 +128,7 @@ static int mqtt_start(int argc, char **argv)
         client.readbuf = rt_calloc(1, client.readbuf_size);
         if (!(client.buf && client.readbuf))
         {
-            rt_kprintf("no memory for MQTT client buffer!\n");
+            LOG_E("no memory for MQTT client buffer!");
             return -1;
         }
 
@@ -171,17 +171,17 @@ static int mqtt_publish(int argc, char **argv)
 {
     if (is_started == 0)
     {
-        rt_kprintf("mqtt client is not connected.\n");
+        LOG_E("mqtt client is not connected.");
         return -1;
     }
 
     if (argc == 2)
     {
-        paho_mqtt_publish(&client, MQTT_PUBTOPIC, argv[1]);
+        paho_mqtt_publish(&client, QOS1, MQTT_PUBTOPIC, argv[1]);
     }
     else if (argc == 3)
     {
-        paho_mqtt_publish(&client, argv[1], argv[2]);
+        paho_mqtt_publish(&client, QOS1, argv[1], argv[2]);
     }
     else
     {
@@ -196,7 +196,7 @@ static int mqtt_publish(int argc, char **argv)
 static void mqtt_new_sub_callback(MQTTClient *client, MessageData *msg_data)
 {
     *((char *)msg_data->message->payload + msg_data->message->payloadlen) = '\0';
-    rt_kprintf("mqtt new subscribe callback: %.*s %.*s\n",
+    LOG_D("mqtt new subscribe callback: %.*s %.*s",
                msg_data->topicName->lenstring.len,
                msg_data->topicName->lenstring.data,
                msg_data->message->payloadlen,
@@ -208,13 +208,13 @@ static int mqtt_subscribe(int argc, char **argv)
 {
     if (argc != 2)
     {
-        LOG_E("mqtt_subscribe [topic]  --send an mqtt subscribe packet and wait for suback before returning.\n");
+        rt_kprintf("mqtt_subscribe [topic]  --send an mqtt subscribe packet and wait for suback before returning.\n");
         return -1;
     }
 	
 	if (is_started == 0)
     {
-        rt_kprintf("mqtt client is not connected.\n");
+        LOG_E("mqtt client is not connected.");
         return -1;
     }
 
@@ -226,13 +226,13 @@ static int mqtt_unsubscribe(int argc, char **argv)
 {
     if (argc != 2)
     {
-        LOG_E("mqtt_unsubscribe [topic]  --send an mqtt unsubscribe packet and wait for suback before returning.\n");
+        rt_kprintf("mqtt_unsubscribe [topic]  --send an mqtt unsubscribe packet and wait for suback before returning.\n");
         return -1;
     }
 	
 	if (is_started == 0)
     {
-        rt_kprintf("mqtt client is not connected.\n");
+        LOG_E("mqtt client is not connected.");
         return -1;
     }
 
@@ -246,7 +246,6 @@ MSH_CMD_EXPORT(mqtt_publish, mqtt publish message to specified topic);
 MSH_CMD_EXPORT(mqtt_subscribe,  mqtt subscribe topic);
 MSH_CMD_EXPORT(mqtt_unsubscribe, mqtt unsubscribe topic);
 #endif /* FINSH_USING_MSH */
-
 ```
 
 ## 运行示例

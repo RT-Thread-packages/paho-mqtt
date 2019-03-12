@@ -14,7 +14,7 @@
 #include "paho_mqtt.h"
 
 #define DBG_ENABLE
-#define DBG_SECTION_NAME    "MQTT"
+#define DBG_SECTION_NAME    "mqtt"
 #ifdef MQTT_DEBUG
 #define DBG_LEVEL           DBG_LOG
 #else
@@ -1263,7 +1263,7 @@ int paho_mqtt_subscribe(MQTTClient *client, enum QoS qos, const char *topic, sub
 
     if (qos != QOS1)
     {
-        LOG_E("Only support Qos(%d) config.", qos);
+        LOG_E("Not support Qos(%d) config, only support Qos(d).", qos, QOS1);
         return PAHO_FAILURE;
     }
 
@@ -1392,18 +1392,26 @@ _exit:
  * This function publish message to specified mqtt topic.
  *
  * @param c the pointer of MQTT context structure
- * @param topicFilter topic filter name
- * @param message the pointer of MQTTMessage structure
+ * @param qos MQTT QOS type, only support QOS1
+ * @param topic topic filter name
+ * @param msg_str the pointer of MQTTMessage structure
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int paho_mqtt_publish(MQTTClient *client, const char *topic, const char *msg_str)
+int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const char *msg_str)
 {
     MQTTMessage message;
-    message.qos = QOS1;
+
+    if (qos != QOS1)
+    {
+        LOG_E("Not support Qos(%d) config, only support Qos(d).", qos, QOS1);
+        return PAHO_FAILURE;
+    }
+
+    message.qos = qos;
     message.retained = 0;
     message.payload = (void *)msg_str;
-    message.payloadlen = strlen(message.payload);
+    message.payloadlen = rt_strlen(message.payload);
 
     return MQTTPublish(client, topic, &message);
 }
@@ -1412,7 +1420,7 @@ int paho_mqtt_publish(MQTTClient *client, const char *topic, const char *msg_str
  * This function control MQTT client configure, such as connect timeout, reconnect interval.
  *
  * @param c the pointer of MQTT context structure
- * @param cmd control configure type
+ * @param cmd control configure type, 'mqttControl' enumeration shows the supported configure types.
  * @param arg the pointer of argument
  *
  * @return the error code, 0 on subscribe successfully.
