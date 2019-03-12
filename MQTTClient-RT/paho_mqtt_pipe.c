@@ -232,8 +232,6 @@ static int net_connect(MQTTClient *c)
     int rc = -1;
     struct addrinfo *addr_res = RT_NULL;
 
-    int timeout = MQTT_SOCKET_TIMEO;
-
     c->sock = -1;
     c->next_packetid = 0;
 
@@ -263,6 +261,7 @@ static int net_connect(MQTTClient *c)
     if (c->tls_session)
     {
         int tls_ret = 0;
+        int timeout = MQTT_SOCKET_TIMEO;
 
         if ((tls_ret = mbedtls_client_context(c->tls_session)) < 0)
         {
@@ -300,6 +299,9 @@ static int net_connect(MQTTClient *c)
     if ((rc = connect(c->sock, addr_res->ai_addr, addr_res->ai_addrlen)) == -1)
     {
         LOG_E("connect err!");
+        closesocket(c->sock);
+        c->sock = -1;
+
         rc = -2;
         goto _exit;
     }
@@ -320,9 +322,8 @@ static int net_disconnect(MQTTClient *c)
     {
         mbedtls_client_close(c->tls_session);
         c->sock = -1;
+        return 0;
     }
-
-    return 0;
 #endif
 
     if (c->sock >= 0)
@@ -330,6 +331,45 @@ static int net_disconnect(MQTTClient *c)
         closesocket(c->sock);
         c->sock = -1;
     }
+
+    return 0;
+}
+
+static int net_disconnect_exit(MQTTClient *c)
+{
+    int i;
+
+    net_disconnect(c);
+
+    if (c->buf && c->readbuf)
+    {
+        rt_free(c->buf);
+        rt_free(c->readbuf);
+    }
+
+    if (c->pub_mutex)
+    {
+        rt_mutex_delete(c->pub_mutex);
+    }
+
+    if (c->pipe_device)
+    {
+        close(c->pub_pipe[0]);
+        close(c->pub_pipe[1]);
+        rt_pipe_delete((const char *)c->pipe_device->parent.parent.name);
+    }
+
+    for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i)
+    {
+        if (c->messageHandlers[i].topicFilter)
+        {
+            rt_free(c->messageHandlers[i].topicFilter);
+            c->messageHandlers[i].topicFilter = RT_NULL;
+            c->messageHandlers[i].callback = RT_NULL;
+        }
+    }
+    
+    c->isconnected = 0;
 
     return 0;
 }
@@ -354,7 +394,9 @@ static int sendPacket(MQTTClient *c, int length)
 
     rc = send(c->sock, c->buf, length, 0);
 
+#ifdef MQTT_USING_TLS
 _continue:
+#endif
     if (rc == length)
     {
         rc = 0;
@@ -405,7 +447,9 @@ static int net_read(MQTTClient *c, unsigned char *buf,  int len, int timeout)
         else
             bytes += rc;
 
+#ifdef MQTT_USING_TLS
 _continue:
+#endif
         if (bytes >= len)
         {
             break;
@@ -518,8 +562,8 @@ static int MQTTConnect(MQTTClient *c)
         fd_set readset;
         struct timeval timeout;
 
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
+        timeout.tv_sec = c->connect_timeout ? c->connect_timeout / RT_TICK_PER_SECOND : 5;
+        timeout.tv_usec = c->connect_timeout ? (c->connect_timeout % RT_TICK_PER_SECOND) * 1000 : 0;
 
         FD_ZERO(&readset);
         FD_SET(c->sock, &readset);
@@ -628,7 +672,7 @@ static int MQTTSubscribe(MQTTClient *c, const char *topicFilter, enum QoS qos)
     rc = MQTTPacket_readPacket(c);
     if (rc < 0)
     {
-        LOG_E("MQTTPacket_readPacket MQTTConnect fail");
+        LOG_E("MQTTSubscribe MQTTPacket_readPacket MQTTConnect fail");
         goto _exit;
     }
 
@@ -741,7 +785,29 @@ static int MQTT_cycle(MQTTClient *c)
     case CONNACK:
     case PUBACK:
     case SUBACK:
+    {
+        int count = 0, grantedQoS = -1;
+        unsigned short mypacketid;
+
+        if (MQTTDeserialize_suback(&mypacketid, 1, &count, &grantedQoS, c->readbuf, c->readbuf_size) == 1)
+            rc = grantedQoS; // 0, 1, 2 or 0x80
+
+        if (rc != 0x80)
+            rc = 0;
+
         break;
+    }  
+    case UNSUBACK:
+    {
+        unsigned short mypacketid;
+
+        if (MQTTDeserialize_unsuback(&mypacketid, c->readbuf, c->readbuf_size) == 1)
+            rc =  PAHO_SUCCESS;
+        else
+            rc =  PAHO_FAILURE;
+
+        break;
+    }
     case PUBLISH:
     {
         MQTTString topicName;
@@ -792,16 +858,148 @@ exit:
     return rc;
 }
 
+static int MQTT_local_send(MQTTClient *c, const void *data, int len)
+{
+    int send_len;
+
+    send_len = write(c->pub_pipe[1], data, len);
+
+    return send_len;
+}
+
+/*
+MQTT_CMD:
+"DISCONNECT"
+*/
+int MQTT_CMD(MQTTClient *c, const char *cmd)
+{
+    char *data = 0;
+    int cmd_len, len;
+    int rc = PAHO_FAILURE;
+
+    if (!c->isconnected)
+        goto _exit;
+
+    cmd_len = strlen(cmd) + 1;
+    if (cmd_len >= sizeof(MQTTMessage))
+    {
+        LOG_E("Commond is too long %d:%d.", cmd_len, sizeof(MQTTMessage));
+        goto _exit;
+    }
+
+    data = rt_malloc(cmd_len);
+    if (!data)
+        goto _exit;
+
+    strcpy(data, cmd);
+    len = MQTT_local_send(c, data, cmd_len);
+    if (len == cmd_len)
+    {
+        rc = 0;
+    }
+
+_exit:
+    if (data)
+        rt_free(data);
+
+    return rc;
+}
+
+/**
+ * This function publish message to specified mqtt topic.
+ * [MQTTMessage] + [payload] + [topic] + '\0'
+ *
+ * @param c the pointer of MQTT context structure
+ * @param topicFilter topic filter name
+ * @param message the pointer of MQTTMessage structure
+ *
+ * @return the error code, 0 on subscribe successfully.
+ */
+int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
+{
+    int rc = PAHO_FAILURE;
+    int len, msg_len;
+    char *data = 0;
+
+    if (!c->isconnected)
+        goto exit;
+
+    msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
+    data = rt_malloc(msg_len);
+    if (!data)
+        goto exit;
+
+    memcpy(data, message, sizeof(MQTTMessage));
+    memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
+    strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topicName);
+
+
+    len = MQTT_local_send(c, data, msg_len);
+    if (len == msg_len)
+    {
+        rc = PAHO_SUCCESS;
+    }
+
+    if (c->isblocking && c->pub_mutex)
+    {
+        if(rt_mutex_take(c->pub_mutex, 5 * RT_TICK_PER_SECOND) < 0)
+        {
+            rc = PAHO_FAILURE;
+        }
+    }
+
+exit:
+    if (data)
+        rt_free(data);
+
+    return rc;
+}
+
+static struct rt_pipe_device *mqtt_pipe_init(int filds[2])
+{
+    char dname[8];
+    char dev_name[32];
+    static int pipeno = 0;
+    struct rt_pipe_device *pipe = RT_NULL;
+
+    rt_snprintf(dname, sizeof(dname), "MQTT%d", pipeno++);
+    pipe = rt_pipe_create(dname, PIPE_BUFSZ);
+    if (pipe == RT_NULL)
+    {
+        LOG_E("create mqtt pipe fail\n");
+        return RT_NULL;
+    }
+
+    rt_snprintf(dev_name, sizeof(dev_name), "/dev/%s", dname);
+    filds[0] = open(dev_name, O_RDONLY, 0);
+    if (filds[0] < 0)
+    {
+        LOG_E("pipe_read_fd open failed\n");
+        return RT_NULL;
+    }
+
+    filds[1] = open(dev_name, O_WRONLY, 0);
+    if (filds[1] < 0)
+    {
+        close(filds[1]);
+        LOG_E("pipe_write_fd open failed\n");
+        return RT_NULL;
+    }
+    
+    return pipe;
+}
+
 static void paho_mqtt_thread(void *param)
 {
     MQTTClient *c = (MQTTClient *)param;
     int i, rc, len;
     int rc_t = 0;
 
-    /* create publish pipe. */
-    if (pipe(c->pub_pipe) != 0)
+    /* create publish pipe */
+    c->pipe_device = mqtt_pipe_init(c->pub_pipe);
+    if (c->pipe_device == RT_NULL)
     {
-        LOG_E("creat pipe err");
+        LOG_E("Create publish pipe device error.");
         goto _mqtt_exit;
     }
 
@@ -814,18 +1012,18 @@ _mqtt_start:
     rc = net_connect(c);
     if (rc != 0)
     {
-        LOG_E("Net connect error(%d)", rc);
+        LOG_E("Net connect error(%d).", rc);
         goto _mqtt_restart;
     }
 
     rc = MQTTConnect(c);
     if (rc != 0)
     {
-        LOG_E("MQTT connect error(%d): %s", rc, MQTTSerialize_connack_string(rc));
+        LOG_E("MQTT connect error(%d): %s.", rc, MQTTSerialize_connack_string(rc));
         goto _mqtt_restart;
     }
 
-    LOG_I("MQTT server connect success");
+    LOG_I("MQTT server connect success.");
 
     for (i = 0; i < MAX_MESSAGE_HANDLERS; i++)
     {
@@ -842,7 +1040,7 @@ _mqtt_start:
         {
             if (rc == 0x80)
             {
-                LOG_E("QoS config err!");
+                LOG_E("QoS(%d) config err!", qos);
             }
             goto _mqtt_disconnect;
         }
@@ -938,7 +1136,6 @@ _mqtt_start:
 
                 if (strcmp((const char *)c->readbuf, "DISCONNECT") == 0)
                 {
-                    LOG_D("DISCONNECT");
                     goto _mqtt_disconnect_exit;
                 }
 
@@ -963,6 +1160,11 @@ _mqtt_start:
                 LOG_D("MQTTSerialize_publish sendPacket rc: %d", rc);
                 goto _mqtt_disconnect;
             }
+
+            if (c->isblocking && c->pub_mutex)
+            {
+                rt_mutex_release(c->pub_mutex);
+            }
         } /* pbulish sock handler. */
     } /* while (1) */
 
@@ -975,109 +1177,219 @@ _mqtt_restart:
     }
 
     net_disconnect(c);
-    rt_thread_delay(RT_TICK_PER_SECOND * 5);
+    rt_thread_delay(c->reconnect_interval > 0 ? 
+        rt_tick_from_millisecond(c->reconnect_interval) : RT_TICK_PER_SECOND * 5);
     LOG_D("restart!");
     goto _mqtt_start;
 
 _mqtt_disconnect_exit:
     MQTTDisconnect(c);
-    net_disconnect(c);
+    net_disconnect_exit(c);
 
 _mqtt_exit:
-    LOG_D("thread exit");
+    LOG_I("MQTT server is disconnected.");
 
     return;
 }
 
+/**
+ * This function start a mqtt worker thread.
+ *
+ * @param client the pointer of MQTT context structure
+ *
+ * @return the error code, 0 on start successfully.
+ */
 int paho_mqtt_start(MQTTClient *client)
 {
-    rt_err_t result;
-    rt_thread_t tid;
-    int stack_size = RT_PKG_MQTT_THREAD_STACK_SIZE;
-    int priority = RT_THREAD_PRIORITY_MAX / 3;
-    char *stack;
+    rt_thread_t tid = RT_NULL;
+    static uint8_t counts = 0;
+    char pub_name[RT_NAME_MAX], thread_name[RT_NAME_MAX];
 
-    static int is_started = 0;
-    if (is_started)
+    /* create publish mutex */
+    rt_memset(pub_name, 0x00, sizeof(pub_name));
+    rt_snprintf(pub_name, RT_NAME_MAX, "pmtx%d", counts);
+    client->pub_mutex = rt_mutex_create(pub_name, RT_IPC_FLAG_FIFO);
+    if (client->pub_mutex == RT_NULL)
     {
-        LOG_W("paho mqtt has already started!");
-        return 0;
-    }    
-
-    tid = rt_malloc(RT_ALIGN(sizeof(struct rt_thread), 8) + stack_size);
-    if (!tid)
-    {
-        LOG_E("no memory for thread: MQTT");
-        return -1;
+        LOG_E("Create publish mutex error.");
+        return PAHO_FAILURE;
     }
 
-    stack = (char *)tid + RT_ALIGN(sizeof(struct rt_thread), 8);
-    result = rt_thread_init(tid,
-                            "MQTT",
-                            paho_mqtt_thread, client, // fun, parameter
-                            stack, stack_size,        // stack, size
-                            priority, 2               //priority, tick
-                           );
-
-    if (result == RT_EOK)
+    rt_memset(thread_name, 0x00, sizeof(thread_name));
+    rt_snprintf(thread_name, RT_NAME_MAX, "mqtt%d", counts++);
+    tid = rt_thread_create( thread_name,
+                            paho_mqtt_thread, (void *) client,      // fun, parameter
+                            RT_PKG_MQTT_THREAD_STACK_SIZE,          // stack size
+                            RT_THREAD_PRIORITY_MAX / 3, 2 );         //priority, tick      
+    if (tid)
     {
         rt_thread_startup(tid);
-        is_started = 1;
     }
 
-    return 0;
+    return PAHO_SUCCESS;
 }
 
-static int MQTT_local_send(MQTTClient *c, const void *data, int len)
+/**
+ * This function stop MQTT worker thread and free MQTT client object.
+ *
+ * @param client the pointer of MQTT context structure
+ *
+ * @return the error code, 0 on start successfully.
+ */
+int paho_mqtt_stop(MQTTClient *client)
 {
-    int send_len;
-
-    send_len = write(c->pub_pipe[1], data, len);
-
-    return send_len;
+    return MQTT_CMD(client, "DISCONNECT");
 }
 
-/*
-MQTT_CMD:
-"DISCONNECT"
-*/
-int MQTT_CMD(MQTTClient *c, const char *cmd)
+/**
+ * This function send an MQTT subscribe packet and wait for suback before returning.
+ *
+ * @param client the pointer of MQTT context structure
+ * @param qos MQTT Qos type, only support QOS1
+ * @param topic topic filter name
+ * @param callback the pointer of subscribe topic receive data function
+ *
+ * @return the error code, 0 on start successfully.
+ */
+int paho_mqtt_subscribe(MQTTClient *client, enum QoS qos, const char *topic, subscribe_cb callback)
 {
-    char *data = 0;
-    int cmd_len, len;
-    int rc = PAHO_FAILURE;
+    int i, lenght, rc = PAHO_SUCCESS;
+    int qos_sub = qos;
+    MQTTString topicFilters = MQTTString_initializer;
+    topicFilters.cstring = (char *)topic;
 
-    if (!c->isconnected)
-        goto _exit;
+    RT_ASSERT(client);
+    RT_ASSERT(topic);
 
-    cmd_len = strlen(cmd) + 1;
-    if (cmd_len >= sizeof(MQTTMessage))
+    if (qos != QOS1)
     {
-        LOG_E("cmd too loog %d:", cmd_len, sizeof(MQTTMessage));
+        LOG_E("Only support Qos(%d) config.", qos);
+        return PAHO_FAILURE;
+    }
+
+    for (i = 0; i < MAX_MESSAGE_HANDLERS ; ++i)
+    {
+        if (client->messageHandlers[i].topicFilter && 
+                rt_strncmp(client->messageHandlers[i].topicFilter, topic, rt_strlen(topic)) == 0)
+        {
+            LOG_D("MQTT client topic(%s) is already subscribed.", topic);
+            return PAHO_SUCCESS;
+        }
+    }
+
+    for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i)
+    {
+        if (client->messageHandlers[i].topicFilter)
+        {
+            continue;
+        }
+
+        lenght = MQTTSerialize_subscribe(client->buf, client->buf_size, 0, getNextPacketId(client), 1, &topicFilters, &qos_sub);
+        if (lenght <= 0)
+        {
+            LOG_E("Subscribe #%d %s failed!", i, topic);
+            client->isconnected = 0;
+            goto _exit;
+        }
+
+        rc = sendPacket(client, lenght);
+        if (rc != PAHO_SUCCESS) 
+        {
+            LOG_E("Subscribe #%d %s failed!", i, topic);
+            client->isconnected = 0;
+            goto _exit;
+        }
+
+        client->messageHandlers[i].qos = qos;
+        client->messageHandlers[i].topicFilter = rt_strdup((char *)topic);
+        if (callback)
+        {
+            client->messageHandlers[i].callback = callback;
+        }
+
+        LOG_I("Subscribe #%d %s OK!", i, topic);
         goto _exit;
     }
 
-    data = rt_malloc(cmd_len);
-    if (!data)
-        goto _exit;
-
-    strcpy(data, cmd);
-    len = MQTT_local_send(c, data, cmd_len);
-    if (len == cmd_len)
+    /* check subscribe numble support */
+    if (i >= MAX_MESSAGE_HANDLERS)
     {
-        rc = 0;
+        LOG_E("Subscribe MAX_MESSAGE_HANDLERS size(%d) is not enough!", MAX_MESSAGE_HANDLERS);
+        rc = PAHO_FAILURE;
+        goto _exit;
     }
 
 _exit:
-    if (data)
-        rt_free(data);
+    return rc;
+}
 
+/**
+ * This function send an MQTT unsubscribe packet and wait for unsuback before returning.
+ *
+ * @param client the pointer of MQTT context structure
+ * @param topic topic filter name
+ *
+ * @return the error code, 0 on start successfully.
+ */
+int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic)
+{
+    int i, length, rc = PAHO_SUCCESS;
+    MQTTString topicFilter = MQTTString_initializer;
+    topicFilter.cstring = (char *)topic;
+
+    RT_ASSERT(client);
+    RT_ASSERT(topic);
+
+    for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i)
+    {
+        if (client->messageHandlers[i].topicFilter == RT_NULL || 
+                rt_strncmp(client->messageHandlers[i].topicFilter, topic, rt_strlen(topic)) != 0)
+        {
+            continue;
+        }
+
+        length = MQTTSerialize_unsubscribe(client->buf, client->buf_size, 0, getNextPacketId(client), 1, &topicFilter);
+        if (length <= 0)
+        {
+            LOG_E("Unubscribe #%d %s failed!", i, topic);
+            client->isconnected = 0;
+            goto _exit;
+        }
+
+        rc = sendPacket(client, length);
+        if (rc != PAHO_SUCCESS)
+        {
+            LOG_E("Unubscribe #%d %s failed!", i, topic);
+            client->isconnected = 0;
+            goto _exit;
+        }
+
+        /* clear message handler */
+        if (client->messageHandlers[i].topicFilter)
+        {
+            rt_free(client->messageHandlers[i].topicFilter);
+            client->messageHandlers[i].topicFilter = RT_NULL;
+        }
+        client->messageHandlers[i].callback = RT_NULL; 
+
+        LOG_I("Unsubscribe #%d %s OK!", i, topic);
+        goto _exit;
+    }
+
+    /* check subscribe topic */
+    if (i >= MAX_MESSAGE_HANDLERS)
+    {
+        LOG_E("Unsubscribe topic(%s) is not exist!", topic);
+        rc = PAHO_FAILURE;
+        goto _exit;
+    }
+
+_exit:
     return rc;
 }
 
 /**
  * This function publish message to specified mqtt topic.
- * [MQTTMessage] + [payload] + [topic] + '\0'
  *
  * @param c the pointer of MQTT context structure
  * @param topicFilter topic filter name
@@ -1085,34 +1397,54 @@ _exit:
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
+int paho_mqtt_publish(MQTTClient *client, const char *topic, const char *msg_str)
 {
-    int rc = PAHO_FAILURE;
-    int len, msg_len;
-    char *data = 0;
+    MQTTMessage message;
+    message.qos = QOS1;
+    message.retained = 0;
+    message.payload = (void *)msg_str;
+    message.payloadlen = strlen(message.payload);
 
-    if (!c->isconnected)
-        goto exit;
-
-    msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
-    data = rt_malloc(msg_len);
-    if (!data)
-        goto exit;
-
-    memcpy(data, message, sizeof(MQTTMessage));
-    memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
-    strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topicName);
-
-    len = MQTT_local_send(c, data, msg_len);
-    if (len == msg_len)
-    {
-        rc = 0;
-    }
-    //LOG_D("MQTTPublish sendto %d", len);
-
-exit:
-    if (data)
-        rt_free(data);
-
-    return rc;
+    return MQTTPublish(client, topic, &message);
 }
+
+/**
+ * This function control MQTT client configure, such as connect timeout, reconnect interval.
+ *
+ * @param c the pointer of MQTT context structure
+ * @param cmd control configure type
+ * @param arg the pointer of argument
+ *
+ * @return the error code, 0 on subscribe successfully.
+ */
+int paho_mqtt_control(MQTTClient *client, int cmd, void *arg)
+{
+    RT_ASSERT(client);
+    RT_ASSERT(arg);
+
+    switch (cmd)
+    {
+        case MQTT_CTRL_SET_CONN_TIMEO:
+            client->connect_timeout = *(int *)arg;
+            break;
+
+        case MQTT_CTRL_SET_RECONN_INTERVAL:
+            client->reconnect_interval = *(int *)arg;
+            break;
+        
+        case MQTT_CTRL_SET_KEEPALIVE_INTERVAL:
+            client->keepAliveInterval = *(unsigned int *)arg;
+            break;
+
+        case MQTT_CTRL_PUBLISH_BLOCK:
+            client->isblocking = *(int *)arg;
+            break;
+        
+        default:
+            LOG_E("Input control commoand(%d) error.", cmd);
+            break;
+    }
+
+    return PAHO_SUCCESS;
+}
+
