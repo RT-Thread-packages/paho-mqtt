@@ -77,26 +77,6 @@ static void mqtt_offline_callback(MQTTClient *c)
 }
 
 /**
- * This function publish message to specific mqtt topic.
- *
- * @param send_str publish message
- *
- * @return none
- */
-static int mq_publish(const char *send_str)
-{
-    MQTTMessage message;
-    const char *msg_str = send_str;
-    const char *topic = MQTT_PUBTOPIC;
-    message.qos = MQTT_TEST_QOS;
-    message.retained = 0;
-    message.payload = (void *)msg_str;
-    message.payloadlen = strlen(message.payload);
-
-    return MQTTPublish(&client, topic, &message);
-}
-
-/**
  * This function create and config a mqtt client.
  *
  * @param void
@@ -107,12 +87,6 @@ static void mq_start(void)
 {
     /* init condata param by using MQTTPacket_connectData_initializer */
     MQTTPacket_connectData condata = MQTTPacket_connectData_initializer;
-
-    static int is_started = 0;
-    if (is_started)
-    {
-        return;
-    }
 
     rt_memset(&client, 0, sizeof(MQTTClient));
 
@@ -151,7 +125,7 @@ static void mq_start(void)
         client.offline_callback = mqtt_offline_callback;
 
         /* set subscribe table and event callback */
-        client.messageHandlers[0].topicFilter = MQTT_SUBTOPIC;
+        client.messageHandlers[0].topicFilter = rt_strdup(MQTT_SUBTOPIC);
         client.messageHandlers[0].callback = mqtt_sub_callback;
         client.messageHandlers[0].qos = MQTT_TEST_QOS;
 
@@ -162,7 +136,6 @@ static void mq_start(void)
     /* run mqtt client */
     paho_mqtt_start(&client);
 
-    is_started = 1;
     return;
 
 _exit:
@@ -211,7 +184,7 @@ static void thread_pub(void *parameter)
 
     while (1)
     {
-        if (!mq_publish(pub_data))
+        if (!paho_mqtt_publish(&client, MQTT_PUBTOPIC, pub_data))
         {
             ++ pub_count;
         }
@@ -222,7 +195,7 @@ static void thread_pub(void *parameter)
     }
 }
 
-void mqtt_test_start(void)
+static void mqtt_test_start(void)
 {
     if (test_is_started)
     {
@@ -248,17 +221,26 @@ void mqtt_test_start(void)
     return;
 }
 
-void mqtt_test_stop(void)
+static void mqtt_test_stop(void)
 {
+    MQTTClient *local_client = &client;
+
     if (pub_thread_tid)
     {
         rt_thread_delete(pub_thread_tid);
     }
+
     if (pub_data)
     {
         rt_free(pub_data);
         pub_data = RT_NULL;
     }
+
+    if (local_client)
+    {
+        paho_mqtt_stop(local_client);
+    }
+
     /* up the cursor 1 line */
     rt_kprintf("\033[1A");
 
