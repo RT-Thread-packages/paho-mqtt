@@ -64,7 +64,7 @@ client.condata.password.cstring = MQTT_PASSWORD;            //设置密码
 client.condata.willFlag = 1;
 client.condata.will.qos = 1;
 client.condata.will.retained = 0;
-client.condata.will.topicName.cstring = MQTT_PUBTOPIC;     //设置推送主题
+client.condata.will.topicName.cstring = rt_strdup(MQTT_PUBTOPIC);     //设置推送主题,需要分配空间存储 topic，以便后面订阅多个 topic
 client.condata.will.message.cstring = MQTT_WILLMSG;        //设置断开通知消息
 ```
 
@@ -101,17 +101,11 @@ paho_mqtt_start(&client);
 
 ### 向指定 Topic 推送消息
 
-连接服务器成功之后，便可以通过代理服务器向指定的 Topic 推送消息。推送消息时需要设置消息内容、Topic、消息等级等配置，示例代码如下：
+连接服务器成功之后，便可以通过代理服务器向指定的 Topic 推送消息。推送消息时需要设置消息内容、Topic、消息等级等配置，使用接口如下：
 
 ``` c
-MQTTMessage message;
-const char *msg_str = send_str;
-const char *topic = MQTT_PUBTOPIC;             //设置指定 Topic
-message.qos = QOS1;                            //设置消息等级
-message.retained = 0;
-message.payload = (void *)msg_str;             //设置消息内容
-message.payloadlen = strlen(message.payload);
-MQTTPublish(&client, topic, &message);         //开始向指定 Topic 推送消息
+// 向指定 Topic 发送消息信息
+int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const char *msg_str);
 ```
 
 ## 运行效果
@@ -119,14 +113,14 @@ MQTTPublish(&client, topic, &message);         //开始向指定 Topic 推送消
 演示示例可以展示连接服务器、订阅 Topic、向指定 Topic 推送消息的功能，如下所示：
 
 ``` c
-msh />mq_start                        /* 启动 MQTT 客户端连接代理服务器 */
-inter mqtt_connect_callback!          /* 连接成功，运行上线回调函数 */
+msh />mqtt_start                             /* 启动 MQTT 客户端连接代理服务器 */
+inter mqtt_connect_callback!                 /* 连接成功，运行上线回调函数 */
 ipv4 address port: 1883
 [MQTT] HOST =  'iot.eclipse.org'
 msh />[MQTT] Subscribe 
-inter mqtt_online_callback!           /* 上线成功，运行在线回调函数 */
-msh />mq_pub hello-rtthread           /* 向指定 Topic 推送消息 */
-msh />mqtt sub callback: /mqtt/test hello-rtthread /* 收到消息，执行回调函数 */
+inter mqtt_online_callback!                 /* 上线成功，运行在线回调函数 */
+msh />mqtt_publish hello-rtthread           /* 向指定 Topic 推送消息 */
+msh />mqtt sub callback: /mqtt/test hello-rtthread     /* 收到消息，执行回调函数 */
 ```
 
 !!! note "注意事项"
