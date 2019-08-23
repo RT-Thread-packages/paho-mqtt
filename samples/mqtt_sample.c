@@ -25,9 +25,7 @@
  * tcp://[fe80::20c:29ff:fe9a:a07e]:1883
  * ssl://[fe80::20c:29ff:fe9a:a07e]:1884
  */
-#define MQTT_URI                "tcp://iot.eclipse.org:1883"
-#define MQTT_USERNAME           "admin"
-#define MQTT_PASSWORD           "admin"
+#define MQTT_URI                "tcp://mq.tongxinmao.com:18831"
 #define MQTT_SUBTOPIC           "/mqtt/test"
 #define MQTT_PUBTOPIC           "/mqtt/test"
 #define MQTT_WILLMSG            "Goodbye!"
@@ -100,8 +98,6 @@ static int mqtt_start(int argc, char **argv)
         client.condata.clientID.cstring = cid;
         client.condata.keepAliveInterval = 30;
         client.condata.cleansession = 1;
-        client.condata.username.cstring = MQTT_USERNAME;
-        client.condata.password.cstring = MQTT_PASSWORD;
 
         /* config MQTT will param. */
         client.condata.willFlag = 1;
