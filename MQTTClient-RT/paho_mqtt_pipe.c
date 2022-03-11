@@ -1408,7 +1408,7 @@ _exit:
  */
 int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const char *msg_str)
 {
-    MQTTMessage message;
+    MQTTMessage message = {0};
 
     if (qos != QOS1)
     {
