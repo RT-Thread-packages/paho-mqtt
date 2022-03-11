@@ -179,7 +179,7 @@ void writeCString(unsigned char** pptr, const char* string)
 {
 	int len = strlen(string);
 	writeInt(pptr, len);
-	memcpy(*pptr, string, len);
+	rt_memcpy(*pptr, string, len);
 	*pptr += len;
 }
 
@@ -196,7 +196,7 @@ void writeMQTTString(unsigned char** pptr, MQTTString mqttstring)
 	if (mqttstring.lenstring.len > 0)
 	{
 		writeInt(pptr, mqttstring.lenstring.len);
-		memcpy(*pptr, mqttstring.lenstring.data, mqttstring.lenstring.len);
+		rt_memcpy(*pptr, mqttstring.lenstring.data, mqttstring.lenstring.len);
 		*pptr += mqttstring.lenstring.len;
 	}
 	else if (mqttstring.cstring)

@@ -16,9 +16,6 @@
 #define  debug_printf           rt_kprintf("[MQTT] ");rt_kprintf
 //#define  debug_printf(...)
 
-#define malloc      rt_malloc
-#define free        rt_free
-
 #ifndef RT_LWIP_NETIF_LOOPBACK
 #error "must enable RT_LWIP_NETIF_LOOPBACK for publish!"
 #endif /* LWIP_NETIF_LOOPBACK */
@@ -150,11 +147,11 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
             goto _exit;
         }
 
-        memcpy(host_addr_new, host_addr, host_addr_len);
+        rt_memcpy(host_addr_new, host_addr, host_addr_len);
         host_addr_new[host_addr_len] = '\0';
         debug_printf("HOST =  '%s'\n", host_addr_new);
 
-        memset(&hint, 0, sizeof(hint));
+        rt_memset(&hint, 0, sizeof(hint));
 
         ret = getaddrinfo(host_addr_new, port_str, &hint, res);
         if (ret != 0)
@@ -671,7 +668,7 @@ static void paho_mqtt_thread(void *param)
         pub_server_addr.sin_family = AF_INET;
         pub_server_addr.sin_port = htons((c->pub_port));
         pub_server_addr.sin_addr.s_addr = INADDR_ANY;
-        memset(&(pub_server_addr.sin_zero), 0, sizeof(pub_server_addr.sin_zero));
+        rt_memset(&(pub_server_addr.sin_zero), 0, sizeof(pub_server_addr.sin_zero));
         rc = bind(c->pub_sock, (struct sockaddr *)&pub_server_addr, sizeof(struct sockaddr));
         if (rc == -1)
         {
@@ -877,7 +874,7 @@ int paho_mqtt_start(MQTTClient *client)
     int priority = RT_THREAD_PRIORITY_MAX / 3;
     char *stack;
 
-    tid = malloc(RT_ALIGN(sizeof(struct rt_thread), 8) + stack_size);
+    tid = rt_malloc(RT_ALIGN(sizeof(struct rt_thread), 8) + stack_size);
     if (!tid)
     {
         debug_printf("no memory for thread: MQTT\n");
@@ -908,7 +905,7 @@ static int MQTT_local_send(MQTTClient *c, const void *data, int len)
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(c->pub_port);
     server_addr.sin_addr = *((const struct in_addr *)&netif_default->ip_addr);
-    memset(&(server_addr.sin_zero), 0, sizeof(server_addr.sin_zero));
+    rt_memset(&(server_addr.sin_zero), 0, sizeof(server_addr.sin_zero));
 
     send_len = sendto(c->pub_sock, data, len, MSG_DONTWAIT,
                       (struct sockaddr *)&server_addr, sizeof(struct sockaddr));
@@ -936,7 +933,7 @@ int MQTT_CMD(MQTTClient *c, const char *cmd)
         goto _exit;
     }
 
-    data = malloc(cmd_len);
+    data = rt_malloc(cmd_len);
     if (!data)
         goto _exit;
 
@@ -949,7 +946,7 @@ int MQTT_CMD(MQTTClient *c, const char *cmd)
 
 _exit:
     if (data)
-        free(data);
+        rt_free(data);
 
     return rc;
 }
@@ -974,12 +971,12 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
         goto exit;
 
     msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
-    data = malloc(msg_len);
+    data = rt_malloc(msg_len);
     if (!data)
         goto exit;
 
-    memcpy(data, message, sizeof(MQTTMessage));
-    memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
+    rt_memcpy(data, message, sizeof(MQTTMessage));
+    rt_memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
     strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topicName);
 
     len = MQTT_local_send(c, data, msg_len);
@@ -991,7 +988,7 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
 
 exit:
     if (data)
-        free(data);
+        rt_free(data);
 
     return rc;
 }

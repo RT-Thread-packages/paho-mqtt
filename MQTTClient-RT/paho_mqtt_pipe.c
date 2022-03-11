@@ -166,7 +166,7 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
             goto _exit;
         }
 
-        memcpy(host_addr_new, host_addr, host_addr_len);
+        rt_memcpy(host_addr_new, host_addr, host_addr_len);
         host_addr_new[host_addr_len] = '\0';
         LOG_D("HOST = '%s'", host_addr_new);
 
@@ -178,7 +178,7 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         }
 #endif
 
-        memset(&hint, 0, sizeof(hint));
+        rt_memset(&hint, 0, sizeof(hint));
 
         ret = getaddrinfo(host_addr_new, port_str, &hint, res);
         if (ret != 0)
@@ -210,16 +210,16 @@ static int mqtt_open_tls(MQTTClient *c)
     c->tls_session = (MbedTLSSession *)rt_malloc(sizeof(MbedTLSSession));
     if (c->tls_session == RT_NULL)
     {
-        LOG_E("open tls failed, no memory for tls_session buffer malloc");
+        LOG_E("open tls failed, no memory for tls_session buffer rt_malloc");
         return -RT_ENOMEM;
     }
-    memset(c->tls_session, 0x0, sizeof(MbedTLSSession));
+    rt_memset(c->tls_session, 0x0, sizeof(MbedTLSSession));
 
     c->tls_session->buffer_len = MQTT_TLS_READ_BUFFER;
     c->tls_session->buffer = rt_malloc(c->tls_session->buffer_len);
     if (c->tls_session->buffer == RT_NULL)
     {
-        LOG_E("open tls failed, no memory for tls_session buffer malloc");
+        LOG_E("open tls failed, no memory for tls_session buffer rt_malloc");
         rt_free(c->tls_session);
         c->tls_session = RT_NULL;
         return -RT_ENOMEM;
@@ -937,8 +937,8 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
     if (!data)
         goto exit;
 
-    memcpy(data, message, sizeof(MQTTMessage));
-    memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
+    rt_memcpy(data, message, sizeof(MQTTMessage));
+    rt_memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
     strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topicName);
 
 

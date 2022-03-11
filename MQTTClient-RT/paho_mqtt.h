@@ -11,8 +11,8 @@
 #include <tls_client.h>
 #endif
 
-#define MQTT_SW_VERSION         "1.1.0"
-#define MQTT_SW_VERSION_NUM     0x10100
+#define MQTT_SW_VERSION         "1.2.0"
+#define MQTT_SW_VERSION_NUM     0x10200
 
 #ifndef PKG_PAHOMQTT_SUBSCRIBE_HANDLERS
 #define MAX_MESSAGE_HANDLERS    1 /* redefinable - how many subscriptions do you want? */

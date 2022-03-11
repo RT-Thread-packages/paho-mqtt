@@ -96,7 +96,7 @@ static void mq_start(void)
         client.uri = MQTT_TEST_SERVER_URI;
 
         /* config connect param */
-        memcpy(&client.condata, &condata, sizeof(condata));
+        rt_memcpy(&client.condata, &condata, sizeof(condata));
         client.condata.clientID.cstring = MQTT_CLIENTID;
         client.condata.keepAliveInterval = 60;
         client.condata.cleansession = 1;
@@ -110,7 +110,7 @@ static void mq_start(void)
         client.condata.will.topicName.cstring = MQTT_PUBTOPIC;
         client.condata.will.message.cstring = MQTT_WILLMSG;
 
-        /* malloc buffer. */
+        /* rt_malloc buffer. */
         client.buf_size = client.readbuf_size = MQTT_PUB_SUB_BUF_SIZE;
         client.buf = rt_malloc(client.buf_size);
         client.readbuf = rt_malloc(client.readbuf_size);

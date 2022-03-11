@@ -108,7 +108,7 @@ static int mqtt_start(int argc, char **argv)
         /* 产生随机的客户端 ID */
         rt_snprintf(cid, sizeof(cid), "rtthread%d", rt_tick_get());
         /* 配置连接参数 */
-        memcpy(&client.condata, &condata, sizeof(condata));
+        rt_memcpy(&client.condata, &condata, sizeof(condata));
         client.condata.clientID.cstring = cid;
         client.condata.keepAliveInterval = 30;
         client.condata.cleansession = 1;

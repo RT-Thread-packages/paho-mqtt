@@ -49,7 +49,7 @@
 
 ``` c
 /* 配置连接参数 */
-memcpy(&client.condata, &condata, sizeof(condata));
+rt_memcpy(&client.condata, &condata, sizeof(condata));
 client.condata.clientID.cstring = cid;
 client.condata.keepAliveInterval = 60;
 client.condata.cleansession = 1;

@@ -80,7 +80,7 @@ int MQTTSerialize_publish(unsigned char* buf, int buflen, unsigned char dup, int
 	if (qos > 0)
 		writeInt(&ptr, packetid);
 
-	memcpy(ptr, payload, payloadlen);
+	rt_memcpy(ptr, payload, payloadlen);
 	ptr += payloadlen;
 
 	rc = ptr - buf;

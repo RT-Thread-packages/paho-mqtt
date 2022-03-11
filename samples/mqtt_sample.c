@@ -94,7 +94,7 @@ static int mqtt_start(int argc, char **argv)
         /* generate the random client ID */
         rt_snprintf(cid, sizeof(cid), "rtthread%d", rt_tick_get());
         /* config connect param */
-        memcpy(&client.condata, &condata, sizeof(condata));
+        rt_memcpy(&client.condata, &condata, sizeof(condata));
         client.condata.clientID.cstring = cid;
         client.condata.keepAliveInterval = 30;
         client.condata.cleansession = 1;
@@ -106,7 +106,7 @@ static int mqtt_start(int argc, char **argv)
         client.condata.will.topicName.cstring = MQTT_PUBTOPIC;
         client.condata.will.message.cstring = MQTT_WILLMSG;
 
-        /* malloc buffer. */
+        /* rt_malloc buffer. */
         client.buf_size = client.readbuf_size = 1024;
         client.buf = rt_calloc(1, client.buf_size);
         client.readbuf = rt_calloc(1, client.readbuf_size);
