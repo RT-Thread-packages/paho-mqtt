@@ -19,6 +19,7 @@
 #include "MQTTPacket.h"
 
 #include <string.h>
+#include <rtthread.h>
 
 /**
  * Encodes the message length according to the MQTT algorithm

@@ -19,6 +19,7 @@
 #include "StackTrace.h"
 
 #include <string.h>
+#include <rtthread.h>
 
 
 /**

@@ -1,17 +1,14 @@
 #include <string.h>
 #include <stdint.h>
-
-#include <rtthread.h>
-#include <rtdevice.h>
+#include <unistd.h>
 #include <sys/time.h>
-
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-
 #include <fcntl.h>
 #include <sys/errno.h>
 
+#include <rtdevice.h>
 #include "MQTTPacket.h"
 #include "paho_mqtt.h"
 

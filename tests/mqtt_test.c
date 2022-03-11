@@ -163,7 +163,7 @@ static void show_test_info(void)
     rt_kprintf("Test duration(sec)            : %d\n", time((time_t *)RT_NULL) - test_start_tm);
     rt_kprintf("Number of published  packages : %d\n", pub_count);
     rt_kprintf("Number of subscribed packages : %d\n", sub_count);
-    snprintf(temp, sizeof(temp), "Packet loss rate              : %.2f%%   \n", (float)((float)(pub_count - sub_count) * 100.0f / pub_count));
+    rt_snprintf(temp, sizeof(temp), "Packet loss rate              : %.2f%%   \n", (float)((float)(pub_count - sub_count) * 100.0f / pub_count));
     rt_kprintf(temp);
     rt_kprintf("Number of reconnections       : %d\n", recon_count);
     /* up the cursor 8 line */
