@@ -3,12 +3,14 @@
 
 #include <rtthread.h>
 #include <rtdevice.h>
-#include <dfs_posix.h>
 #include <sys/time.h>
 
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+
+#include <fcntl.h>
+#include <sys/errno.h>
 
 #include "MQTTPacket.h"
 #include "paho_mqtt.h"
@@ -39,6 +41,12 @@
 #if (RT_PKG_MQTT_THREAD_STACK_SIZE < 6144)
 #error "MQTT using tls, please increase MQTT thread stack size up to 6K via menuconfig tool!"
 #endif
+#endif
+
+#ifndef RT_PIPE_BUFSZ
+#define PIPE_BUFSZ    512
+#else
+#define PIPE_BUFSZ    RT_PIPE_BUFSZ
 #endif
 
 /*
