@@ -75,7 +75,7 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
     else
     {
         rc = -1;
-        goto _exit;  
+        goto _exit;
     }
 
     /* ipv6 address */
@@ -99,12 +99,12 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         if (port_len >= 6 || port_len < 1)
         {
             rc = -1;
-            goto _exit;            
+            goto _exit;
         }
 
         strncpy(port_str, host_addr + host_addr_len + 2, port_len);
         port_str[port_len] = '\0';
-        debug_printf("ipv6 address port: %s\n", port_str);        
+        debug_printf("ipv6 address port: %s\n", port_str);
     }
     else /* ipv4 or domain. */
     {
@@ -116,17 +116,17 @@ static int mqtt_resolve_uri(MQTTClient *c, struct addrinfo **res)
         }
         host_addr_len = ptr - host_addr;
         if ((host_addr_len < 1) || (host_addr_len > uri_len))
-        {        
+        {
             rc = -1;
             goto _exit;
-        }             
+        }
 
         port_len = uri_len - 6 - host_addr_len - 1;
         if (port_len >= 6 || port_len < 1)
         {
             rc = -1;
-            goto _exit;            
-        }   
+            goto _exit;
+        }
 
         strncpy(port_str, host_addr + host_addr_len + 1, port_len);
         port_str[port_len] = '\0';
@@ -168,7 +168,7 @@ _exit:
         rt_free(host_addr_new);
         host_addr_new = RT_NULL;
     }
-    return rc;    
+    return rc;
 }
 
 static int net_connect(MQTTClient *c)
@@ -184,7 +184,7 @@ static int net_connect(MQTTClient *c)
     {
         debug_printf("resolve uri err\n");
         goto _exit;
-    } 
+    }
 
     if ((c->sock = socket(addr_res->ai_family, SOCK_STREAM, 0)) == -1)
     {

@@ -1,6 +1,6 @@
 /*
  * File      : mqtt_test.c
- * COPYRIGHT (C) 2012-2018, Shanghai Real-Thread Technology Co., Ltd
+ * COPYRIGHT (C) 2012-2022, Shanghai Real-Thread Technology Co., Ltd
  *
  * Change Logs:
  * Date           Author       Notes

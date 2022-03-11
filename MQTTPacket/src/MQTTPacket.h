@@ -30,21 +30,21 @@ extern "C" {
   #define DLLExport  __attribute__ ((visibility ("default")))
 #else
   #define DLLImport
-  #define DLLExport  
+  #define DLLExport
 #endif
 
 enum errors
 {
-	MQTTPACKET_BUFFER_TOO_SHORT = -2,
-	MQTTPACKET_READ_ERROR = -1,
-	MQTTPACKET_READ_COMPLETE
+    MQTTPACKET_BUFFER_TOO_SHORT = -2,
+    MQTTPACKET_READ_ERROR = -1,
+    MQTTPACKET_READ_COMPLETE
 };
 
 enum msgTypes
 {
-	CONNECT = 1, CONNACK, PUBLISH, PUBACK, PUBREC, PUBREL,
-	PUBCOMP, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK,
-	PINGREQ, PINGRESP, DISCONNECT
+    CONNECT = 1, CONNACK, PUBLISH, PUBACK, PUBREC, PUBREL,
+    PUBCOMP, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK,
+    PINGREQ, PINGRESP, DISCONNECT
 };
 
 /**
@@ -52,36 +52,36 @@ enum msgTypes
  */
 typedef union
 {
-	unsigned char byte;	                /**< the whole byte */
+    unsigned char byte;                 /**< the whole byte */
 #if defined(REVERSED)
-	struct
-	{
-		unsigned int type : 4;			/**< message type nibble */
-		unsigned int dup : 1;				/**< DUP flag bit */
-		unsigned int qos : 2;				/**< QoS value, 0, 1 or 2 */
-		unsigned int retain : 1;		/**< retained flag bit */
-	} bits;
+    struct
+    {
+        unsigned int type : 4;          /**< message type nibble */
+        unsigned int dup : 1;               /**< DUP flag bit */
+        unsigned int qos : 2;               /**< QoS value, 0, 1 or 2 */
+        unsigned int retain : 1;        /**< retained flag bit */
+    } bits;
 #else
-	struct
-	{
-		unsigned int retain : 1;		/**< retained flag bit */
-		unsigned int qos : 2;				/**< QoS value, 0, 1 or 2 */
-		unsigned int dup : 1;				/**< DUP flag bit */
-		unsigned int type : 4;			/**< message type nibble */
-	} bits;
+    struct
+    {
+        unsigned int retain : 1;        /**< retained flag bit */
+        unsigned int qos : 2;               /**< QoS value, 0, 1 or 2 */
+        unsigned int dup : 1;               /**< DUP flag bit */
+        unsigned int type : 4;          /**< message type nibble */
+    } bits;
 #endif
 } MQTTHeader;
 
 typedef struct
 {
-	int len;
-	char* data;
+    int len;
+    char* data;
 } MQTTLenString;
 
 typedef struct
 {
-	char* cstring;
-	MQTTLenString lenstring;
+    char* cstring;
+    MQTTLenString lenstring;
 } MQTTString;
 
 #define MQTTString_initializer {NULL, {0, NULL}}
@@ -115,12 +115,12 @@ void writeMQTTString(unsigned char** pptr, MQTTString mqttstring);
 DLLExport int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*, int));
 
 typedef struct {
-	int (*getfn)(void *, unsigned char*, int); /* must return -1 for error, 0 for call again, or the number of bytes read */
-	void *sck;	/* pointer to whatever the system may use to identify the transport */
-	int multiplier;
-	int rem_len;
-	int len;
-	char state;
+    int (*getfn)(void *, unsigned char*, int); /* must return -1 for error, 0 for call again, or the number of bytes read */
+    void *sck;  /* pointer to whatever the system may use to identify the transport */
+    int multiplier;
+    int rem_len;
+    int len;
+    char state;
 }MQTTTransport;
 
 int MQTTPacket_readnb(unsigned char* buf, int buflen, MQTTTransport *trp);

@@ -191,8 +191,8 @@ static int mqtt_subscribe(int argc, char **argv)
         rt_kprintf("mqtt_subscribe [topic]  --send an mqtt subscribe packet and wait for suback before returning.\n");
         return -1;
     }
-	
-	if (is_started == 0)
+
+    if (is_started == 0)
     {
         LOG_E("mqtt client is not connected.");
         return -1;
@@ -208,8 +208,8 @@ static int mqtt_unsubscribe(int argc, char **argv)
         rt_kprintf("mqtt_unsubscribe [topic]  --send an mqtt unsubscribe packet and wait for suback before returning.\n");
         return -1;
     }
-	
-	if (is_started == 0)
+
+    if (is_started == 0)
     {
         LOG_E("mqtt client is not connected.");
         return -1;

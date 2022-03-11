@@ -19,17 +19,17 @@
 #define MQTTUNSUBSCRIBE_H_
 
 #if !defined(DLLImport)
-  #define DLLImport 
+  #define DLLImport
 #endif
 #if !defined(DLLExport)
   #define DLLExport
 #endif
 
 DLLExport int MQTTSerialize_unsubscribe(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid,
-		int count, MQTTString topicFilters[]);
+        int count, MQTTString topicFilters[]);
 
 DLLExport int MQTTDeserialize_unsubscribe(unsigned char* dup, unsigned short* packetid, int max_count, int* count, MQTTString topicFilters[],
-		unsigned char* buf, int len);
+        unsigned char* buf, int len);
 
 DLLExport int MQTTSerialize_unsuback(unsigned char* buf, int buflen, unsigned short packetid);
 

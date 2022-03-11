@@ -35,11 +35,11 @@ enum returnCode { PAHO_BUFFER_OVERFLOW = -2, PAHO_FAILURE = -1, PAHO_SUCCESS = 0
 
 enum mqttControl
 {
-    MQTT_CTRL_SET_CONN_TIMEO = 0,      /* set mqtt connect timeout */  
-    MQTT_CTRL_SET_RECONN_INTERVAL,     /* set reconnect interval */  
-    MQTT_CTRL_SET_KEEPALIVE_INTERVAL,  /* set keepalive interval */  
-    MQTT_CTRL_PUBLISH_BLOCK,           /* publish data block or nonblock */  
-};  
+    MQTT_CTRL_SET_CONN_TIMEO = 0,      /* set mqtt connect timeout */
+    MQTT_CTRL_SET_RECONN_INTERVAL,     /* set reconnect interval */
+    MQTT_CTRL_SET_KEEPALIVE_INTERVAL,  /* set keepalive interval */
+    MQTT_CTRL_PUBLISH_BLOCK,           /* publish data block or nonblock */
+};
 
 typedef struct MQTTMessage
 {
@@ -102,8 +102,8 @@ struct MQTTClient
 #ifdef MQTT_USING_TLS
     MbedTLSSession *tls_session;      /* mbedtls session struct */
 #endif
-	
-	void *user_data;                  /* user-specific data */
+
+    void *user_data;                  /* user-specific data */
 };
 
 /* subscribe topic receive data callback */

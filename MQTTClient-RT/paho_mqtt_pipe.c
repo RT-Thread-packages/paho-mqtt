@@ -373,7 +373,7 @@ static int net_disconnect_exit(MQTTClient *c)
             c->messageHandlers[i].callback = RT_NULL;
         }
     }
-    
+
     c->isconnected = 0;
 
     return 0;
@@ -801,7 +801,7 @@ static int MQTT_cycle(MQTTClient *c)
             rc = 0;
 
         break;
-    }  
+    }
     case UNSUBACK:
     {
         unsigned short mypacketid;
@@ -990,7 +990,7 @@ static struct rt_pipe_device *mqtt_pipe_init(int filds[2])
         LOG_E("pipe_write_fd open failed\n");
         return RT_NULL;
     }
-    
+
     return pipe;
 }
 
@@ -1182,7 +1182,7 @@ _mqtt_restart:
     }
 
     net_disconnect(c);
-    rt_thread_delay(c->reconnect_interval > 0 ? 
+    rt_thread_delay(c->reconnect_interval > 0 ?
         rt_tick_from_millisecond(c->reconnect_interval) : RT_TICK_PER_SECOND * 5);
     LOG_D("restart!");
     goto _mqtt_start;
@@ -1225,7 +1225,7 @@ int paho_mqtt_start(MQTTClient *client)
     tid = rt_thread_create( thread_name,
                             paho_mqtt_thread, (void *) client,      // fun, parameter
                             RT_PKG_MQTT_THREAD_STACK_SIZE,          // stack size
-                            RT_THREAD_PRIORITY_MAX / 3, 2 );         //priority, tick      
+                            RT_THREAD_PRIORITY_MAX / 3, 2 );         //priority, tick
     if (tid)
     {
         rt_thread_startup(tid);
@@ -1274,7 +1274,7 @@ int paho_mqtt_subscribe(MQTTClient *client, enum QoS qos, const char *topic, sub
 
     for (i = 0; i < MAX_MESSAGE_HANDLERS ; ++i)
     {
-        if (client->messageHandlers[i].topicFilter && 
+        if (client->messageHandlers[i].topicFilter &&
                 rt_strncmp(client->messageHandlers[i].topicFilter, topic, rt_strlen(topic)) == 0)
         {
             LOG_D("MQTT client topic(%s) is already subscribed.", topic);
@@ -1298,7 +1298,7 @@ int paho_mqtt_subscribe(MQTTClient *client, enum QoS qos, const char *topic, sub
         }
 
         rc = sendPacket(client, lenght);
-        if (rc != PAHO_SUCCESS) 
+        if (rc != PAHO_SUCCESS)
         {
             LOG_E("Subscribe #%d %s failed!", i, topic);
             client->isconnected = 0;
@@ -1347,7 +1347,7 @@ int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic)
 
     for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i)
     {
-        if (client->messageHandlers[i].topicFilter == RT_NULL || 
+        if (client->messageHandlers[i].topicFilter == RT_NULL ||
                 rt_strncmp(client->messageHandlers[i].topicFilter, topic, rt_strlen(topic)) != 0)
         {
             continue;
@@ -1375,7 +1375,7 @@ int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic)
             rt_free(client->messageHandlers[i].topicFilter);
             client->messageHandlers[i].topicFilter = RT_NULL;
         }
-        client->messageHandlers[i].callback = RT_NULL; 
+        client->messageHandlers[i].callback = RT_NULL;
 
         LOG_I("Unsubscribe #%d %s OK!", i, topic);
         goto _exit;
@@ -1444,7 +1444,7 @@ int paho_mqtt_control(MQTTClient *client, int cmd, void *arg)
         case MQTT_CTRL_SET_RECONN_INTERVAL:
             client->reconnect_interval = *(int *)arg;
             break;
-        
+
         case MQTT_CTRL_SET_KEEPALIVE_INTERVAL:
             client->keepAliveInterval = *(unsigned int *)arg;
             break;
@@ -1452,7 +1452,7 @@ int paho_mqtt_control(MQTTClient *client, int cmd, void *arg)
         case MQTT_CTRL_PUBLISH_BLOCK:
             client->isblocking = *(int *)arg;
             break;
-        
+
         default:
             LOG_E("Input control commoand(%d) error.", cmd);
             break;
