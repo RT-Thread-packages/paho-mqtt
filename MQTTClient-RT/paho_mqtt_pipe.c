@@ -352,9 +352,9 @@ static int net_disconnect_exit(MQTTClient *c)
         rt_free(c->readbuf);
     }
 
-    if (c->pub_mutex)
+    if (c->pub_sem)
     {
-        rt_mutex_delete(c->pub_mutex);
+        rt_sem_delete(c->pub_sem);
     }
 
     if (c->pipe_device)
@@ -945,14 +945,6 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
         rc = PAHO_SUCCESS;
     }
 
-    if (c->isblocking && c->pub_mutex)
-    {
-        if(rt_mutex_take(c->pub_mutex, 5 * RT_TICK_PER_SECOND) < 0)
-        {
-            rc = PAHO_FAILURE;
-        }
-    }
-
 exit:
     if (data)
         rt_free(data);
@@ -1166,9 +1158,9 @@ _mqtt_start:
                 goto _mqtt_disconnect;
             }
 
-            if (c->isblocking && c->pub_mutex)
+            if (c->isblocking && c->pub_sem)
             {
-                rt_mutex_release(c->pub_mutex);
+                rt_sem_release(c->pub_sem);
             }
         } /* pbulish sock handler. */
     } /* while (1) */
@@ -1213,10 +1205,10 @@ int paho_mqtt_start(MQTTClient *client)
     /* create publish mutex */
     rt_memset(pub_name, 0x00, sizeof(pub_name));
     rt_snprintf(pub_name, RT_NAME_MAX, "pmtx%d", counts);
-    client->pub_mutex = rt_mutex_create(pub_name, RT_IPC_FLAG_FIFO);
-    if (client->pub_mutex == RT_NULL)
+    client->pub_sem = rt_sem_create(pub_name, 1, RT_IPC_FLAG_FIFO);
+    if (client->pub_sem == RT_NULL)
     {
-        LOG_E("Create publish mutex error.");
+        LOG_E("Create publish semaphore error.");
         return PAHO_FAILURE;
     }
 
@@ -1417,6 +1409,14 @@ int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const
     message.retained = 0;
     message.payload = (void *)msg_str;
     message.payloadlen = rt_strlen(message.payload);
+
+    if (client->isblocking && client->pub_sem)
+    {
+        if(rt_sem_take(client->pub_sem, 5 * RT_TICK_PER_SECOND) < 0)
+        {
+            return PAHO_FAILURE;
+        }
+    }
 
     return MQTTPublish(client, topic, &message);
 }

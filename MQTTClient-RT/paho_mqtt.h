@@ -90,7 +90,7 @@ struct MQTTClient
     void (*defaultMessageHandler)(MQTTClient *, MessageData *);
 
     /* publish interface */
-    rt_mutex_t pub_mutex;             /* publish data mutex for blocking */
+    rt_sem_t pub_sem;             /* publish data semaphore for blocking */
 #if defined(RT_USING_POSIX_FS) && (defined(RT_USING_DFS_NET) || defined(SAL_USING_POSIX))
     struct rt_pipe_device* pipe_device;
     int pub_pipe[2];
