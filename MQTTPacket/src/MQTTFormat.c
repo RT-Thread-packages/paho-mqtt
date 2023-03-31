@@ -18,7 +18,7 @@
 #include "MQTTPacket.h"
 
 #include <string.h>
-
+#include <rtthread.h>
 
 const char* MQTTPacket_names[] =
 {
@@ -120,6 +120,7 @@ char* MQTTFormat_toClientString(char* strbuf, int strbuflen, unsigned char* buf,
     int rem_length = 0;
     MQTTHeader header = {0};
     int strindex = 0;
+    (void)strindex;
 
     header.byte = buf[index++];
     index += MQTTPacket_decodeBuf(&buf[index], &rem_length);
@@ -188,6 +189,7 @@ char* MQTTFormat_toServerString(char* strbuf, int strbuflen, unsigned char* buf,
     int rem_length = 0;
     MQTTHeader header = {0};
     int strindex = 0;
+    (void)strindex;
 
     header.byte = buf[index++];
     index += MQTTPacket_decodeBuf(&buf[index], &rem_length);
