@@ -122,13 +122,13 @@ int paho_mqtt_start(MQTTClient *client);
  * This function publish message to specified mqtt topic.
  * @note it will be discarded, recommend to use "paho_mqtt_publish"
  *
- * @param c the pointer of MQTT context structure
- * @param topicFilter topic filter name
+ * @param client the pointer of MQTT context structure
+ * @param topicName topic filter name
  * @param message the pointer of MQTTMessage structure
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message);
+int MQTTPublish(MQTTClient *client, const char *topicName, MQTTMessage *message);
 
 #ifdef PAHOMQTT_PIPE_MODE
 
@@ -166,7 +166,7 @@ int paho_mqtt_unsubscribe(MQTTClient *client, const char *topic);
 /**
  * This function publish message to specified mqtt topic.
  *
- * @param c the pointer of MQTT context structure
+ * @param client the pointer of MQTT context structure
  * @param qos MQTT QOS type, only support QOS1
  * @param topic topic filter name
  * @param msg_str the pointer of send message
@@ -178,7 +178,7 @@ int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const
 /**
  * This function control MQTT client configure, such as connect timeout, reconnect interval.
  *
- * @param c the pointer of MQTT context structure
+ * @param client the pointer of MQTT context structure
  * @param cmd control configure type, 'mqttControl' enumeration shows the supported configure types.
  * @param arg the pointer of argument
  *
