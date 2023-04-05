@@ -1218,11 +1218,13 @@ int paho_mqtt_start(MQTTClient *client)
                             paho_mqtt_thread, (void *) client,      // fun, parameter
                             RT_PKG_MQTT_THREAD_STACK_SIZE,          // stack size
                             RT_THREAD_PRIORITY_MAX / 3, 2 );         //priority, tick
-    if (tid)
+    if (tid == RT_NULL)
     {
-        rt_thread_startup(tid);
+        LOG_E("Create MQTT thread error.");
+        return PAHO_FAILURE;
     }
 
+    rt_thread_startup(tid);
     return PAHO_SUCCESS;
 }
 
