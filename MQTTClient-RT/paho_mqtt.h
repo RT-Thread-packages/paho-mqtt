@@ -123,12 +123,12 @@ int paho_mqtt_start(MQTTClient *client);
  * @note it will be discarded, recommend to use "paho_mqtt_publish"
  *
  * @param client the pointer of MQTT context structure
- * @param topicName topic filter name
+ * @param topic topic filter name
  * @param message the pointer of MQTTMessage structure
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int MQTTPublish(MQTTClient *client, const char *topicName, MQTTMessage *message);
+int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message);
 
 #ifdef PAHOMQTT_PIPE_MODE
 

@@ -956,12 +956,12 @@ _exit:
  * [MQTTMessage] + [payload] + [topic] + '\0'
  *
  * @param client the pointer of MQTT context structure
- * @param topicName topic filter name
+ * @param topic topic filter name
  * @param message the pointer of MQTTMessage structure
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int MQTTPublish(MQTTClient *client, const char *topicName, MQTTMessage *message)
+int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message)
 {
     int rc = PAHO_FAILURE;
     int len, msg_len;
@@ -970,14 +970,14 @@ int MQTTPublish(MQTTClient *client, const char *topicName, MQTTMessage *message)
     if (!client->isconnected)
         goto exit;
 
-    msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
+    msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topic) + 1;
     data = rt_malloc(msg_len);
     if (!data)
         goto exit;
 
     rt_memcpy(data, message, sizeof(MQTTMessage));
     rt_memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
-    strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topicName);
+    strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topic);
 
     len = MQTT_local_send(client, data, msg_len);
     if (len == msg_len)
