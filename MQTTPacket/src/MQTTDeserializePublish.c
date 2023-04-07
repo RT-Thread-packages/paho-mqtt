@@ -54,7 +54,7 @@ int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retaine
     enddata = curdata + mylen;
 
     if (!readMQTTLenString(topicName, &curdata, enddata) ||
-        enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
+        enddata - curdata < 0) /* do we have enough data to read the protocol version byte? 1 if successful, 0 if not*/
     {
         rc = 0;
         goto exit;
