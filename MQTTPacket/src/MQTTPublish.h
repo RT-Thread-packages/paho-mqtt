@@ -29,7 +29,7 @@ DLLExport int MQTTSerialize_publish(unsigned char* buf, int buflen, unsigned cha
         MQTTString topicName, unsigned char* payload, int payloadlen);
 
 DLLExport int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retained, unsigned short* packetid, MQTTString* topicName,
-        unsigned char** payload, int* payloadlen, unsigned char* buf, int len);
+        unsigned char** payload, int* payloadlen, unsigned char* buf, int buflen);
 
 DLLExport int MQTTSerialize_puback(unsigned char* buf, int buflen, unsigned short packetid);
 DLLExport int MQTTSerialize_pubrel(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid);

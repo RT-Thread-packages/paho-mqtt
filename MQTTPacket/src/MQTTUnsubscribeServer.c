@@ -32,7 +32,7 @@
   * @return the length of the serialized data.  <= 0 indicates error
   */
 int MQTTDeserialize_unsubscribe(unsigned char* dup, unsigned short* packetid, int maxcount, int* count, MQTTString topicFilters[],
-        unsigned char* buf, int len)
+        unsigned char* buf, int buflen)
 {
     MQTTHeader header = {0};
     unsigned char* curdata = buf;
