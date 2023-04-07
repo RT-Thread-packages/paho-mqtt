@@ -31,7 +31,7 @@
   * @param payloadlen returned integer - the length of the MQTT payload
   * @param buf the raw buffer data, of the correct length determined by the remaining length field
   * @param buflen the length in bytes of the data in the supplied buffer
-  * @return error code.  1 is success
+  * @return error code. 1 if successful, 0 if not
   */
 int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retained, unsigned short* packetid, MQTTString* topicName,
         unsigned char** payload, int* payloadlen, unsigned char* buf, int buflen)
@@ -55,7 +55,10 @@ int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retaine
 
     if (!readMQTTLenString(topicName, &curdata, enddata) ||
         enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
+    {
+        rc = 0;
         goto exit;
+    }
 
     if (*qos > 0)
         *packetid = readInt(&curdata);
