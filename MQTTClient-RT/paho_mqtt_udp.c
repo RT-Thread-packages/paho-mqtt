@@ -34,6 +34,10 @@
 #endif
 #endif
 
+#define DBG_TAG "paho-mqtt"
+#define DBG_LVL DBG_INFO
+#include <rtdbg.h>
+
 static uint16_t pub_port = 7000;
 
 /*
