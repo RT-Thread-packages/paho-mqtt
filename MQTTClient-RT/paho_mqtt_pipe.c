@@ -914,20 +914,21 @@ _exit:
  * This function publish message to specified mqtt topic.
  * [MQTTMessage] + [payload] + [topic] + '\0'
  *
- * @param c the pointer of MQTT context structure
- * @param topicFilter topic filter name
+ * @param client the pointer of MQTT context structure
+ * @param topic topic filter name
  * @param message the pointer of MQTTMessage structure
  *
  * @return the error code, 0 on subscribe successfully.
  */
-int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
+int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message)
 {
     int rc = PAHO_FAILURE;
     int len, msg_len;
     char *data = 0;
 
-    if (!c->isconnected)
+    if (!client->isconnected)
         goto exit;
+
 
     msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
     if(msg_len >= c->buf_size)
@@ -936,16 +937,17 @@ int MQTTPublish(MQTTClient *c, const char *topicName, MQTTMessage *message)
         rc = PAHO_BUFFER_OVERFLOW;
         goto exit;
     }
+
     data = rt_malloc(msg_len);
     if (!data)
         goto exit;
 
     rt_memcpy(data, message, sizeof(MQTTMessage));
     rt_memcpy(data + sizeof(MQTTMessage), message->payload, message->payloadlen);
-    strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topicName);
+    strcpy(data + sizeof(MQTTMessage) + message->payloadlen, topic);
 
 
-    len = MQTT_local_send(c, data, msg_len);
+    len = MQTT_local_send(client, data, msg_len);
     if (len == msg_len)
     {
         rc = PAHO_SUCCESS;
@@ -1396,7 +1398,7 @@ _exit:
 /**
  * This function publish message to specified mqtt topic.
  *
- * @param c the pointer of MQTT context structure
+ * @param client the pointer of MQTT context structure
  * @param qos MQTT QOS type, only support QOS1
  * @param topic topic filter name
  * @param msg_str the pointer of MQTTMessage structure
@@ -1432,7 +1434,7 @@ int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const
 /**
  * This function control MQTT client configure, such as connect timeout, reconnect interval.
  *
- * @param c the pointer of MQTT context structure
+ * @param client the pointer of MQTT context structure
  * @param cmd control configure type, 'mqttControl' enumeration shows the supported configure types.
  * @param arg the pointer of argument
  *

@@ -29,11 +29,11 @@ DLLExport int MQTTSerialize_subscribe(unsigned char* buf, int buflen, unsigned c
         int count, MQTTString topicFilters[], int requestedQoSs[]);
 
 DLLExport int MQTTDeserialize_subscribe(unsigned char* dup, unsigned short* packetid,
-        int maxcount, int* count, MQTTString topicFilters[], int requestedQoSs[], unsigned char* buf, int len);
+        int maxcount, int* count, MQTTString topicFilters[], int requestedQoSs[], unsigned char* buf, int buflen);
 
 DLLExport int MQTTSerialize_suback(unsigned char* buf, int buflen, unsigned short packetid, int count, int* grantedQoSs);
 
-DLLExport int MQTTDeserialize_suback(unsigned short* packetid, int maxcount, int* count, int grantedQoSs[], unsigned char* buf, int len);
+DLLExport int MQTTDeserialize_suback(unsigned short* packetid, int maxcount, int* count, int grantedQoSs[], unsigned char* buf, int buflen);
 
 
 #endif /* MQTTSUBSCRIBE_H_ */

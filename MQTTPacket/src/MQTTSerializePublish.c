@@ -102,7 +102,7 @@ exit:
   * @param packetid the MQTT packet identifier
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_ack(unsigned char* buf, int buflen, unsigned char packettype, unsigned char dup, unsigned short packetid)
+int MQTTSerialize_ack(unsigned char* buf, int buflen, unsigned char type, unsigned char dup, unsigned short packetid)
 {
     MQTTHeader header = {0};
     int rc = 0;
@@ -114,9 +114,9 @@ int MQTTSerialize_ack(unsigned char* buf, int buflen, unsigned char packettype, 
         rc = MQTTPACKET_BUFFER_TOO_SHORT;
         goto exit;
     }
-    header.bits.type = packettype;
+    header.bits.type = type;
     header.bits.dup = dup;
-    header.bits.qos = (packettype == PUBREL) ? 1 : 0;
+    header.bits.qos = (type == PUBREL) ? 1 : 0;
     writeChar(&ptr, header.byte); /* write header */
 
     ptr += MQTTPacket_encode(ptr, 2); /* write remaining length */
