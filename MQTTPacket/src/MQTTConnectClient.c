@@ -116,7 +116,8 @@ int MQTTSerialize_connect(unsigned char* buf, int buflen, MQTTPacket_connectData
 
     rc = ptr - buf;
 
-    exit: FUNC_EXIT_RC(rc);
+    exit: 
+    FUNC_EXIT_RC(rc);
     return rc;
 }
 
