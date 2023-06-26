@@ -929,7 +929,6 @@ int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message)
     if (!client->isconnected)
         goto exit;
 
-
     msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topic) + 1;
     if(msg_len >= client->buf_size)
     {
