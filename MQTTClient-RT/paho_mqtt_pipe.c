@@ -930,10 +930,10 @@ int MQTTPublish(MQTTClient *client, const char *topic, MQTTMessage *message)
         goto exit;
 
 
-    msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topicName) + 1;
-    if(msg_len >= c->buf_size)
+    msg_len = sizeof(MQTTMessage) + message->payloadlen + strlen(topic) + 1;
+    if(msg_len >= client->buf_size)
     {
-        LOG_E("Message is too long %d:%d.", msg_len, c->buf_size);
+        LOG_E("Message is too long %d:%d.", msg_len, client->buf_size);
         rc = PAHO_BUFFER_OVERFLOW;
         goto exit;
     }
