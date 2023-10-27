@@ -28,7 +28,11 @@
 #define MQTT_TLS_READ_BUFFER    4096
 #endif
 
-enum QoS { QOS0, QOS1, QOS2 } ALIGN(4);
+#if (RT_VER_NUM >= 0x50000)
+    enum QoS { QOS0, QOS1, QOS2 } rt_align(4);
+#else
+    enum QoS { QOS0, QOS1, QOS2 } ALIGN(4);
+#endif
 
 /* all failure return codes must be negative */
 enum returnCode { PAHO_BUFFER_OVERFLOW = -2, PAHO_FAILURE = -1, PAHO_SUCCESS = 0 };
