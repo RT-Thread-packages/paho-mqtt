@@ -975,18 +975,18 @@ static struct rt_pipe_device *mqtt_pipe_init(int filds[2])
     }
 
     rt_snprintf(dev_name, sizeof(dev_name), "/dev/%s", dname);
-    filds[0] = open(dev_name, O_RDONLY, 0);
-    if (filds[0] < 0)
-    {
-        LOG_E("pipe_read_fd open failed\n");
-        return RT_NULL;
-    }
-
     filds[1] = open(dev_name, O_WRONLY, 0);
     if (filds[1] < 0)
     {
         close(filds[1]);
         LOG_E("pipe_write_fd open failed\n");
+        return RT_NULL;
+    }
+
+    filds[0] = open(dev_name, O_RDONLY, 0);
+    if (filds[0] < 0)
+    {
+        LOG_E("pipe_read_fd open failed\n");
         return RT_NULL;
     }
 
