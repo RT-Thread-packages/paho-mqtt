@@ -1269,7 +1269,7 @@ int paho_mqtt_subscribe(MQTTClient *client, enum QoS qos, const char *topic, sub
 
     if (qos != QOS1)
     {
-        LOG_E("Not support Qos(%d) config, only support Qos(d).", qos, QOS1);
+        LOG_E("Not support Qos%d config, only support Qos1.", qos);
         return PAHO_FAILURE;
     }
 
@@ -1410,7 +1410,7 @@ int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const
 
     if (qos != QOS1)
     {
-        LOG_E("Not support Qos(%d) config, only support Qos(d).", qos, QOS1);
+        LOG_E("Not support Qos%d config, only support Qos1.", qos);
         return PAHO_FAILURE;
     }
 
@@ -1418,6 +1418,7 @@ int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const
     message.retained = 0;
     message.payload = (void *)msg_str;
     message.payloadlen = rt_strlen(message.payload);
+    message.id = getNextPacketId(client);
 
     if (client->isblocking && client->pub_sem)
     {
