@@ -1410,10 +1410,14 @@ int paho_mqtt_publish(MQTTClient *client, enum QoS qos, const char *topic, const
 
     if (qos != QOS1)
     {
-        LOG_E("Not support Qos(%d) config, only support Qos(d).", qos, QOS1);
+        LOG_E("Not support Qos%d config, only support Qos%d.", qos, QOS1);
         return PAHO_FAILURE;
     }
 
+    if(qos > QOS0)
+    {
+        message.id = getNextPacketId(client);
+    }
     message.qos = qos;
     message.retained = 0;
     message.payload = (void *)msg_str;
